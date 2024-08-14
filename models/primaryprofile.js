@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const db = require('../util/database');
 const Userfile = require('./Userfile');
+const bcrypt = require('bcrypt');
 
 const PrimaryProfile = db.define('PrimaryProfile', {
   id: {
@@ -38,5 +39,14 @@ const PrimaryProfile = db.define('PrimaryProfile', {
     type: Sequelize.STRING
   }
 });
+
+PrimaryProfile.prototype.comparePassword = async function(password) {
+  try {
+    return await bcrypt.compare(password, this.password);
+  } catch (error) {
+    console.error('Error comparing password:', error);
+    throw error;
+  }
+};
 
 module.exports = PrimaryProfile;
