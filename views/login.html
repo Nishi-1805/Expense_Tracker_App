@@ -46,19 +46,27 @@
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ email, password }),
 })
-  .then((response) => response.json())
-  .then((data) => {
-      if (data.message === 'Login successful' && data.redirect) {
-        window.location.href = '/notes';
-      } else {
-        alert(data.message);
-      }
-    })
-    .catch((error) => {
-      console.error('Error logging in:', error);
-      alert('Error logging in');
-    });
-  });
+   .then((response) => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        return response.text().then((message) => {
+                            throw new Error(message);
+                        });
+                    }
+                })
+                .then((data) => {
+                    if (data.redirect) {
+                        window.location.href = '/notes';
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error logging in:', error);
+                    alert('Error logging in: ' + error.message);
+                });
+        });
     </script>
 </body>
 
