@@ -1,175 +1,107 @@
-body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    color: rgb(28, 3, 3);
-    background-color: #37044f;
-    overflow-x: hidden;
-  }
-  
-  .header-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #8152ee; 
-    padding: 10px; 
-    border-radius: 10px; 
-  }
-  
-  .top-right-icons {
-    display: flex;
-    align-items: center;
-  }
-  
-  .top-right-icons i {
-    font-size: 24px;
-  margin-right: 25px;
-  }
-  
-  #search-input {
-    width: 150px;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-  }
-  
-  #search-icon {
-    cursor: pointer;
-  }
-  
-  #search-icon:hover {
-    color: #ccc;
-  }
+const axios = require('axios');
+const Userfile = require('../models/Userfile');
+const PrimaryProfile = require('../models/primaryprofile')
+const bcrypt = require('bcrypt');
 
-  #onedrive-icon:hover {
-    color: #ccc;
-  }
+exports.getCurrencies = async (req, res) => {
+  try {
+    const response = await axios.get(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.json`);
+    const currencies = response.data;
+    //console.log('Currencies:', currencies);
+    if (!currencies) {
+      throw new Error('No currencies found');
+    }
 
-  #more-options-icon:hover {
-    color: #ccc;
-  }
-  
-  nav ul {
-    display: flex;
-    justify-content: space-between;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    background-color: #2b0b3e; 
-    border-radius: 10px; 
-    padding: 10px; 
-  }
-  
-  nav li {
-    margin-right: 20px;
-  }
-  
-  nav a {
-    text-decoration: none;
-    color: whitesmoke;
-    font-size: larger;
-  }
-  
-  nav a:hover {
-    color: #666;
-  }
+    const entries = Object.entries(currencies);
+    const filteredEntries = entries.filter(([key, value]) => {
+      return key.toLowerCase().includes(req.query.searchTerm.toLowerCase()) ||
+             value.toLowerCase().includes(req.query.searchTerm.toLowerCase());
+    });
 
-  #more-options-list {
-    display: none;
-    position: absolute;
-    top: 30px;
-    right: 0;
-    background-color: #faf9fb;
-    border: 1px solid #37044f;
-    border-radius: 5px;
-    padding: 10px;
-  }
-  
-  #more-options-list.show {
-    display: block;
-  }
+    const currenciesArray = filteredEntries.map(([key, value]) => {
+      return {
+        name: value,
+        code: key,
+        country: ''
+      };
+    });
 
-  #more-options-list li {
-    margin-bottom: 10px;
+    res.json(currenciesArray);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Error fetching currencies');
   }
-  
-  #more-options-list a {
-    text-decoration: none;
-    color: #333;
-  }
-  
-  #more-options-list a:hover {
-    color: #762b2b;
-  }
+};
 
-  .yearly-expense-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-    background-color: #f7f7f7;
-    border: 1px solid #ddd;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+exports.getAppPage = (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/app.html'));
+};
+
+exports.getNewUser = (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/new-user.html'));
+};
+
+exports.getloginPage = (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/login.html'));
+};
+
+exports.getNotesPage = (req, res)=> {
+  res.sendFile(path.join(__dirname, '../views/notes.html'))
+}
+
+exports.getDailyExpensePage = (req, res)=>{
+  res.sendFile(path.join(__dirname, '../views/daily.html')) 
+}
+
+exports.getMonthlyExpensePage = (req, res)=>{
+  res.sendFile(path.join(__dirname, '../views/monthly.html')) 
+}
+
+exports.getYearlyExpensePage = (req, res)=>{
+  res.sendFile(path.join(__dirname, '../views/yearly.html')) 
+}
+
+exports.createUser = async (req, res) => {
+  try {
+    const { password, name, email, purpose, info, account } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const userfile = await Userfile.create({ googleDriveBackupId: null }); // assume no Google Drive backup ID for now
+    const primaryProfile = await PrimaryProfile.create({
+      userId: userfile.id,
+      password: hashedPassword,
+      name,
+      email,
+      purpose,
+      info,
+      account,
+    });
+
+    res.status(201).json({ message: 'User added successfully!' });
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: 'Email id already registered!!!' });
   }
-  
-  .year-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+};
+
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const primaryProfile = await PrimaryProfile.findOne({ email });
+    if (!primaryProfile) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+    if (!(await primaryProfile.comparePassword(password))) {
+      return res.status(401).json({ message: 'Invalid password' });
+    }
+    if (primaryProfile.email !== email) {
+      return res.status(401).json({ message: 'Invalid email' });
+    }
+    res.status(200).json({ message: 'Login successful', redirect: true });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
-  
-  .year-bar button {
-    background-color: #4CAF50;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  .year-bar button:hover {
-    background-color: #3e8e41;
-  }
-  
-  .year-bar span {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0 20px;
-  }
-  
-  .yearly-summary-section {
-    margin-top: 20px;
-  }
-  
-  .yearly-summary-box {
-    background-color: #fff;
-    padding: 20px;
-    border: 1px solid #ddd;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .summary-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .summary-item p {
-    font-size: 16px;
-    margin: 0;
-  }
-  
-  #pdf-btn {
-    background-color: #4CAF50;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 20px;
-  }
-  
-  #pdf-btn:hover {
-    background-color: #3e8e41;
-  }
+};
