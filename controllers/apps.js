@@ -89,15 +89,12 @@ exports.createUser = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const primaryProfile = await PrimaryProfile.findOne({ email });
+    const primaryProfile = await PrimaryProfile.findOne({ where: { email } });
     if (!primaryProfile) {
       return res.status(404).json({ message: 'Email not found' });
     }
     if (!(await primaryProfile.comparePassword(password))) {
       return res.status(401).json({ message: 'Invalid password' });
-    }
-    if (primaryProfile.email !== email) {
-      return res.status(401).json({ message: 'Invalid email' });
     }
     res.status(200).json({ message: 'Login successful', redirect: true });
   } catch (error) {
