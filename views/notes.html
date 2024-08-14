@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day-to-Day Expenses - Notes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/notes.css">
+</head>
+
+<body>
+  <header>
+    <div class="header-container">
+      <h1>Day-to-Day Expenses</h1>
+      <div class="top-right-icons">
+        <i class="fas fa-cloud" id="onedrive-icon"></i>
+        <i class="fas fa-drive" id="google-drive-icon"></i>
+        <i class="fas fa-search" id="search-icon"></i>
+        <input type="search" id="search-input" placeholder="Search..." style="display: none;">
+        <i class="fa-solid fa-bars" id="more-options-icon"></i>
+        <ul id="more-options-list">
+          <li><a href="#">Charts</a></li>
+          <li><a href="#">Need Help</a></li>
+          <li><a href="#">Settings</a></li>
+        </ul>
+      </div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="/notes" id="notes-nav-item"><i class="fas fa-pencil"
+              style="font-size: 24px;"></i><strong>Notes</strong></a></li>
+        <li id="daily-expense"><a href="/daily"><i class="fas fa-money-bill-wave"
+              style="font-size: 24px;"></i><strong>Daily</strong></a></li>
+        <li><a href="/monthly"><i class="fas fa-chart-bar" style="font-size: 24px;"></i><strong>Monthly</strong></a>
+        </li>
+        <li><a href="/yearly"><i class="fas fa-chart-line" style="font-size: 24px;"></i><strong>Yearly</strong></a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section class="notes-sidebar">
+      <div class="date-bar">
+        <button id="prev-month-btn"><i class="fas fa-chevron-left"></i></button>
+        <span id="current-month">August 2024</span>
+        <button id="next-month-btn"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </section>
+    <section class="notes-content">
+      <ul id="notes-list">
+        <!-- List of notes will be displayed here -->
+      </ul>
+      <button id="add-note-btn">Add Note</button>
+      <form id="add-note-form" style="display: none;">
+        <input type="text" id="note-input" placeholder="Add a new note">
+        <textarea id="note-textarea" placeholder="Enter note details"></textarea>
+        <button id="submit-note-btn" type="submit">Add Note</button>
+      </form>
+    </section>
+  </main>
+  <script>
+    const notesNavItem = document.getElementById('notes-nav-item');
+
+    notesNavItem.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '/notes';
+    });
+    const dailyNavItem = document.getElementById('daily-expense');
+
+    dailyNavItem.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '/daily';
+    });
+    const searchIcon = document.getElementById('search-icon');
+    const searchInput = document.getElementById('search-input');
+    const moreOptionsIcon = document.getElementById('more-options-icon');
+    const moreOptionsList = document.getElementById('more-options-list');
+
+    searchIcon.addEventListener('click', () => {
+      searchInput.style.display = 'block';
+    });
+
+    const prevMonthBtn = document.getElementById('prev-month-btn');
+    const nextMonthBtn = document.getElementById('next-month-btn');
+    const currentMonthSpan = document.getElementById('current-month');
+    const addNoteBtn = document.getElementById('add-note-btn');
+    const addNoteForm = document.getElementById('add-note-form');
+
+    let currentMonth = 'August 2024';
+    let currentYear = 2024;
+
+    prevMonthBtn.addEventListener('click', () => {
+      // Decrease the month and year accordingly
+      if (currentMonth === 'January') {
+        currentMonth = 'December';
+        currentYear -= 1;
+      } else {
+        currentMonth = getPreviousMonth(currentMonth);
+      }
+      currentMonthSpan.textContent = `${currentMonth} ${currentYear}`;
+    });
+
+    nextMonthBtn.addEventListener('click', () => {
+      // Increase the month and year accordingly
+      if (currentMonth === 'December') {
+        currentMonth = 'January';
+        currentYear += 1;
+      } else {
+        currentMonth = getNextMonth(currentMonth);
+      }
+      currentMonthSpan.textContent = `${currentMonth} ${currentYear}`;
+    });
+
+    addNoteBtn.addEventListener('click', () => {
+      addNoteForm.style.display = 'block';
+    });
+
+    function getPreviousMonth(month) {
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const index = months.indexOf(month);
+      return months[index - 1];
+    }
+
+    function getNextMonth(month) {
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const index = months.indexOf(month);
+      return months[index + 1];
+    }
+
+    moreOptionsIcon.addEventListener('click', () => {
+      moreOptionsList.classList.toggle('show');
+    });
+
+    // Add event listener to document to hide menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!moreOptionsList.contains(e.target) && !moreOptionsIcon.contains(e.target)) {
+        moreOptionsList.classList.remove('show');
+      }
+    });
+
+  </script>
+</body>
+
+</html>
