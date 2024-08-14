@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New User Login</title>
+    <link rel="stylesheet" href="/css/new-user.css">
+</head>
+<body>
+    <main>
+        <!-- Section 1: Primary Profile -->
+        <section id="primary-profile">
+          <h2 id="primary-profile-header">Primary Profile</h2>
+          <h4>Edit the default profile!</h4>
+          <p>Profile lets you manage your money inflows and outflows among multiple accounts.</p>
+          <p>Tip: You can create more profiles later for managing professional or non-personal finance. Check 'Profiles and Accounts' under settings.</p>
+          <form id="primary-profile-form" style="display: none;">
+            <label for="profile-image">Profile Image:</label>
+            <input type="file" id="profile-image" name="profile-image" accept="image/*"><br><br>
+            <label for="name"> Profile Name:</label>
+            <input type="text" id="name" name="name"><br><br>
+            <label for="email">Profile Email:</label>
+            <input type="email" id="email" name="email"><br><br>
+            <label for="purpose">Profile Purpose:</label>
+            <input type="purpose" id="purpose" name="purpose"><br><br>
+            <label for="info">Additional Information</label>
+            <input type="info" id="info" name="info"><br><br>
+            <h4>Accounts</h4>
+            <label for="account">Primary Account</label>
+            <input type="text" id="account" name="account"><br><br>
+            <button type="submit">+ Add Account</button>
+          </form>
+        </section>
+      
+        <!-- Section 2: Sign In -->
+        <section id="sign-in">
+            <p>Safeguard your data by signing in with your Google Drive backup.</p>
+            <p>This secures your information, ensuring recovery in case of device loss or app issues as the app does not have access to any of the users data.</p>
+         <button type="submit">Sign In</button>
+        </section>
+      
+        <!-- Section 3: Note and Skip Button -->
+        <section id="note-and-skip">
+        <p><strong>NOTE:</strong>You can always check these features under settings any time.</p>
+        </section>
+        <button id="skip-btn">Skip</button>
+      </main> 
+      <script>
+        const primaryProfileHeader = document.getElementById('primary-profile-header');
+        const primaryProfileForm = document.getElementById('primary-profile-form');
+      
+        primaryProfileHeader.addEventListener('click', () => {
+          primaryProfileForm.style.display = primaryProfileForm.style.display === 'none'? 'block' : 'none';
+        });
+        const skipBtn = document.getElementById('skip-btn');
+        skipBtn.addEventListener('click', () => {
+    window.location.href = '/notes';
+  });
+      </script>
+</body>
+</html>
