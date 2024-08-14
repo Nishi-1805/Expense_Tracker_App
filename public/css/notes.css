@@ -1,0 +1,188 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: rgb(28, 3, 3);
+    background-color: #37044f;
+  }
+  
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #8152ee; 
+    padding: 10px; 
+    border-radius: 10px; 
+  }
+  
+  .top-right-icons {
+    display: flex;
+    align-items: center;
+  }
+  
+  .top-right-icons i {
+    font-size: 24px;
+  margin-right: 25px;
+  }
+  
+  #search-input {
+    width: 150px;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  #search-icon {
+    cursor: pointer;
+  }
+  
+  #search-icon:hover {
+    color: #ccc;
+  }
+
+  #onedrive-icon:hover {
+    color: #ccc;
+  }
+
+  #more-options-icon:hover {
+    color: #ccc;
+  }
+  
+  nav ul {
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: #2b0b3e; 
+    border-radius: 10px; 
+    padding: 10px; 
+  }
+  
+  nav li {
+    margin-right: 20px;
+  }
+  
+  nav a {
+    text-decoration: none;
+    color: whitesmoke;
+    font-size: larger;
+  }
+  
+  nav a:hover {
+    color: #666;
+  }
+
+  #more-options-list {
+    display: none;
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background-color: #faf9fb;
+    border: 1px solid #37044f;
+    border-radius: 5px;
+    padding: 10px;
+  }
+  
+  #more-options-list.show {
+    display: block;
+  }
+
+  #more-options-list li {
+    margin-bottom: 10px;
+  }
+  
+  #more-options-list a {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  #more-options-list a:hover {
+    color: #762b2b;
+  }
+
+  .date-bar {
+    width: 80%; 
+    margin: 20px auto; 
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .date-bar button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .date-bar button:hover {
+    color: #666;
+  }
+  
+  .date-bar span {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .notes-content {
+    margin-top: 20px;
+  }
+  
+  #add-note-btn {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  #add-note-btn:hover {
+    background-color: #3e8e41;
+  }
+  
+  #add-note-form {
+    display: none;
+    margin-top: 20px; 
+    padding: 20px; 
+    width: 80%; 
+    margin-left: 10%; 
+    margin-right: 10%; 
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 20px;
+  }
+  
+  #add-note-form input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+  }
+  
+  #add-note-form textarea {
+    width: 100%;
+    height: 100px; 
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    resize: vertical; 
+  }
+
+  #submit-note-btn {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  #submit-note-btn:hover {
+    background-color: #3e8e41;
+  }
