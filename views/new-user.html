@@ -15,20 +15,21 @@
           <p>Profile lets you manage your money inflows and outflows among multiple accounts.</p>
           <p>Tip: You can create more profiles later for managing professional or non-personal finance. Check 'Profiles and Accounts' under settings.</p>
           <form id="primary-profile-form" style="display: none;">
-            <label for="profile-image">Profile Image:</label>
-            <input type="file" id="profile-image" name="profile-image" accept="image/*"><br><br>
-            <label for="name"> Profile Name:</label>
+            <label for="name"><strong>Profile Name:</strong></label>
             <input type="text" id="name" name="name"><br><br>
-            <label for="email">Profile Email:</label>
+            <label for="email"><strong>Profile Email:</strong></label>
             <input type="email" id="email" name="email"><br><br>
-            <label for="purpose">Profile Purpose:</label>
-            <input type="purpose" id="purpose" name="purpose"><br><br>
-            <label for="info">Additional Information</label>
-            <input type="info" id="info" name="info"><br><br>
+            <label for="password"><strong>Profile Password:</strong></label>
+            <input type="password" id="password" name="password"><br><br>
+            <label for="purpose"><strong>Profile Purpose:</strong></label>
+            <input type="text" id="purpose" name="purpose"><br><br>
+            <label for="info"><strong>Additional Information</strong></label>
+            <input type="text" id="info" name="info"><br><br>
             <h4>Accounts</h4>
-            <label for="account">Primary Account</label>
+            <label for="account"><strong>Primary Account</strong></label>
             <input type="text" id="account" name="account"><br><br>
-            <button type="submit">+ Add Account</button>
+            <button type="submit">Register</button>
+            <div id="error-message"></div>
           </form>
         </section>
       
@@ -45,6 +46,7 @@
         </section>
         <button id="skip-btn">Skip</button>
       </main> 
+
       <script>
         const primaryProfileHeader = document.getElementById('primary-profile-header');
         const primaryProfileForm = document.getElementById('primary-profile-form');
@@ -52,10 +54,40 @@
         primaryProfileHeader.addEventListener('click', () => {
           primaryProfileForm.style.display = primaryProfileForm.style.display === 'none'? 'block' : 'none';
         });
+        primaryProfileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(primaryProfileForm);
+    const data = {};
+    formData.forEach((value, key) => {
+      data[key] = value;
+    });
+
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        primaryProfileForm.reset();
+        console.log('User added successfully!');
+        window.location.href = '/notes'; // redirect to notes page
+      } else {
+        const errorMessage = await response.text();
+      document.getElementById('error-message').innerHTML = errorMessage;
+      }
+    } catch (error) {
+      console.error('Error adding user:', error);
+    }
+  });
         const skipBtn = document.getElementById('skip-btn');
         skipBtn.addEventListener('click', () => {
     window.location.href = '/notes';
   });
+
       </script>
 </body>
 </html>
