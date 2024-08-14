@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Day-to-Day Expenses - Notes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/yearly.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Day-to-Day Expenses</h1>
+            <div class="top-right-icons">
+                <i class="fas fa-cloud" id="onedrive-icon"></i>
+                <i class="fas fa-drive" id="google-drive-icon"></i>
+                <i class="fas fa-search" id="search-icon"></i>
+                <input type="search" id="search-input" placeholder="Search..." style="display: none;">
+                <i class="fa-solid fa-bars" id="more-options-icon"></i>
+                <ul id="more-options-list">
+                    <li><a href="#">Charts</a></li>
+                    <li><a href="#">Need Help</a></li>
+                    <li><a href="#">Settings</a></li>
+                </ul>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="/notes"><i class="fas fa-pencil" style="font-size: 24px;"></i></a></li>
+                <li><a href="/daily"><i class="fas fa-money-bill-wave"
+                            style="font-size: 24px;"></i><strong>Daily</strong></a></li>
+                <li><a href="/monthly"><i class="fas fa-chart-bar"
+                            style="font-size: 24px;"></i><strong>Monthly</strong></a></li>
+                <li><a href="/yearly" class="active"><i class="fas fa-chart-line"
+                            style="font-size: 24px;"></i><strong>Yearly</strong></a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="yearly-expense-container">
+            <div class="year-bar">
+                <button id="prev-year-btn"><i class="fas fa-chevron-left"></i></button>
+                <span id="current-year">2024</span>
+                <button id="next-year-btn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <section class="yearly-summary-section">
+                <div class="yearly-summary-box">
+                    <h2>Yearly Summary</h2>
+                    <div class="summary-item">
+                        <p>Total Income (Credit)</p>
+                        <p id="total-income">$0.00</p>
+                    </div>
+                    <div class="summary-item">
+                        <p>Total Expense (Debit)</p>
+                        <p id="total-expense">$0.00</p>
+                    </div>
+                    <div class="summary-item">
+                        <p>Carry Forward Amount</p>
+                        <p id="carry-forward-amount">$0.00</p>
+                    </div>
+                    <div class="summary-item">
+                        <p>Balance Left</p>
+                        <p id="balance-left">$0.00</p>
+                    </div>
+                </div>
+            </section>
+            <button id="pdf-btn"><i class="fas fa-file-pdf"></i> Download PDF</button>
+        </section>
+    </main>
+    <script>
+        const searchIcon = document.getElementById('search-icon');
+        const searchInput = document.getElementById('search-input');
+        const moreOptionsIcon = document.getElementById('more-options-icon');
+        const moreOptionsList = document.getElementById('more-options-list');
+
+        searchIcon.addEventListener('click', () => {
+            searchInput.style.display = 'block';
+        });
+        moreOptionsIcon.addEventListener('click', () => {
+            moreOptionsList.classList.toggle('show');
+        });
+
+        // Add event listener to document to hide menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!moreOptionsList.contains(e.target) && !moreOptionsIcon.contains(e.target)) {
+                moreOptionsList.classList.remove('show');
+            }
+        });
+        const prevYearBtn = document.getElementById('prev-year-btn');
+        const nextYearBtn = document.getElementById('next-year-btn');
+        const currentYearSpan = document.getElementById('current-year');
+
+        let currentYear = 2024; // initialize with a fixed year
+
+        prevYearBtn.addEventListener('click', () => {
+            currentYear--;
+            updateYearDisplay();
+        });
+
+        nextYearBtn.addEventListener('click', () => {
+            currentYear++;
+            updateYearDisplay();
+        });
+
+        function updateYearDisplay() {
+            currentYearSpan.textContent = currentYear.toString();
+        }
+    </script>
+</body>
+
+</html>
