@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>Day-to-Day Expense</title>
+    <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to Day-To-Day Expenses</h1>
+    </header>
+    <main>
+        <section class="currency-selection">
+            <h2>Currency</h2>
+            <input type="search" id="currency-search" placeholder="Search your currency. Ex:Indian">
+            <ul id="currency-list"></ul>
+        </section>
+        <section class="user-auth">
+            <h2>Already a user?</h2>
+            <p>If you have already used this app before, and have backed up your data to your Google Drive, click on find backup to restore your data and continue working on it.</p>
+            <button id="find-backup-btn">Find Backup</button>
+            <button id="new-user-btn">I'm a new user</button>
+        </section>
+    </main>
+
+   <script>
+    const currencySearchInput = document.getElementById('currency-search');
+    const currencyList = document.getElementById('currency-list');
+    let selectedCurrency = null;
+
+    function searchCurrency() {
+  const searchTerm = currencySearchInput.value.trim().toLowerCase();
+  if (searchTerm) {
+    fetch(`/api/currencies?searchTerm=${searchTerm}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(currencies => {
+      currencyList.innerHTML = '';
+      currencies.forEach(currency => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${currency.name} (${currency.code}) - ${currency.country}`;
+        listItem.addEventListener('click', () => {
+          if (selectedCurrency) {
+            selectedCurrency.classList.remove('selected');
+          }
+          selectedCurrency = listItem;
+          selectedCurrency.classList.add('selected');
+          currencyList.innerHTML = '';
+          currencyList.appendChild(listItem);
+        });
+        currencyList.appendChild(listItem);
+      });
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  }
+}
+
+    currencySearchInput.addEventListener('keypress', event => {
+      if (event.key === 'Enter') {
+        searchCurrency();
+      }
+    });
+
+    const newUserBtn = document.getElementById('new-user-btn');
+
+    newUserBtn.addEventListener('click', () => {
+  const selectedCurrencyCode = selectedCurrency.textContent.split(' ')[1].trim();
+  // Store the selected currency in local storage
+  localStorage.setItem('selectedCurrency', selectedCurrencyCode);
+  window.location.href = `/new-user?currency=${selectedCurrencyCode}`;
+});
+
+  </script>
+</body>
+</html>
