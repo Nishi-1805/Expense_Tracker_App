@@ -1,0 +1,121 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #15d73f;
+    background-color: #390441; 
+  }
+  
+  main {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    
+  }
+  
+  h1 {
+    font-size: 24px;
+    margin: 20px; 
+    padding: 10px; 
+  }
+  
+  h2 {
+    font-size: 18px;
+  }
+  
+  /* Currency Selection Styles */
+  
+  .currency-selection {
+    background-color: #4d0c0cbd; 
+    padding: 20px;
+    border: 1px solid #3f0505;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  
+  #currency-search {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+  }
+  
+  #currency-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  #currency-list li {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  #currency-list li:hover {
+    background-color: #f0f0f0;
+  } 
+  
+  #currency-list li.selected {
+    background-color: #3b0404; 
+    cursor: default;
+  }
+  
+  #currency-list li.selected:hover {
+    background-color: #420404;
+    cursor: default;
+    text-decoration: none;
+    color: inherit;
+  }
+  /* User Auth Styles */
+  
+  .user-auth {
+    background-color: #5a0303; 
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+  
+  .user-auth h2 {
+    margin-top: 0;
+  }
+  
+  .user-auth p {
+    margin-bottom: 10px;
+  }
+  
+  #find-backup-btn, #new-user-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  #find-backup-btn {
+    background-color: #4CAF50;
+    color: #fff;
+  }
+  
+  #find-backup-btn:hover {
+    background-color: #3e8e41;
+  }
+  
+  #new-user-btn {
+    background-color: #337AB7;
+    color: #fff;
+  }
+  
+  #new-user-btn:hover {
+    background-color: #23527c;
+  }
+  
+  /* Add margin between currency and user auth sections */
+  .currency-selection + .user-auth {
+    margin-top: 40px;
+  }
