@@ -1,0 +1,107 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: rgb(28, 3, 3);
+    background-color: #37044f;
+  }
+  
+  main {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #330337;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Section Styles */
+  
+  section {
+    margin-bottom: 20px;
+    border-radius: 7px;
+  }
+  
+  h2 {
+    margin-top: 0;
+  }
+  
+  h4 {
+    margin-bottom: 10px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  input[type="text"], input[type="email"], input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+  }
+  
+  button[type="submit"] {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  button[type="submit"]:hover {
+    background-color: #3e8e41;
+  }
+  
+  /* Primary Profile Styles */
+  
+  #primary-profile {
+    background-color: #b1a6b2;
+    padding: 20px;
+    border: 1px solid #ddd;
+  }
+  
+  #primary-profile-header {
+    cursor: pointer;
+  }
+  
+  #primary-profile-form {
+    display: none;
+  }
+  
+  /* Sign In Styles */
+  
+  #sign-in {
+    background-color: #b1a6b2;
+    padding: 20px;
+    border: 1px solid #ddd;
+  }
+  
+  /* Note and Skip Button Styles */
+  
+  #note-and-skip {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #b1a6b2;
+    border: 1px solid #ddd;
+  }
+  
+  #skip-btn {
+    background-color: #16e041;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  #skip-btn:hover {
+    background-color: #aaa;
+  }
