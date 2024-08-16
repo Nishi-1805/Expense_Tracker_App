@@ -10,6 +10,10 @@ router.get('/new-user', controllers.getNewUser);
 
 router.get('/notes', controllers.getNotesPage);
 router.get('/daily', controllers.getDailyExpensePage);
+
+router.get('/transactions', controllers.getDailyExpenses);
+router.post('/transactions', controllers.addTransaction);
+router.delete('/transactions/:transactionId', controllers.deleteTransaction);
 router.get('/monthly', controllers.getMonthlyExpensePage);
 router.get('/yearly', controllers.getYearlyExpensePage);
 router.post('/users', controllers.createUser);
