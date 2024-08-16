@@ -1,7 +1,10 @@
 const axios = require('axios');
 const Userfile = require('../models/Userfile');
 const PrimaryProfile = require('../models/primaryprofile')
+const Transactions = require('../models/daily-expense');
 const bcrypt = require('bcrypt');
+const { Op } = require('sequelize');
+const moment = require('moment');
 
 exports.getCurrencies = async (req, res) => {
   try {
@@ -15,7 +18,7 @@ exports.getCurrencies = async (req, res) => {
     const entries = Object.entries(currencies);
     const filteredEntries = entries.filter(([key, value]) => {
       return key.toLowerCase().includes(req.query.searchTerm.toLowerCase()) ||
-             value.toLowerCase().includes(req.query.searchTerm.toLowerCase());
+        value.toLowerCase().includes(req.query.searchTerm.toLowerCase());
     });
 
     const currenciesArray = filteredEntries.map(([key, value]) => {
@@ -45,20 +48,20 @@ exports.getloginPage = (req, res) => {
   res.sendFile(path.join(__dirname, '../views/login.html'));
 };
 
-exports.getNotesPage = (req, res)=> {
+exports.getNotesPage = (req, res) => {
   res.sendFile(path.join(__dirname, '../views/notes.html'))
 }
 
-exports.getDailyExpensePage = (req, res)=>{
-  res.sendFile(path.join(__dirname, '../views/daily.html')) 
+exports.getDailyExpensePage = (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/daily.html'))
 }
 
-exports.getMonthlyExpensePage = (req, res)=>{
-  res.sendFile(path.join(__dirname, '../views/monthly.html')) 
+exports.getMonthlyExpensePage = (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/monthly.html'))
 }
 
-exports.getYearlyExpensePage = (req, res)=>{
-  res.sendFile(path.join(__dirname, '../views/yearly.html')) 
+exports.getYearlyExpensePage = (req, res) => {
+  res.sendFile(path.join(__dirname, '../views/yearly.html'))
 }
 
 exports.createUser = async (req, res) => {
@@ -102,3 +105,83 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+exports.addTransaction = async (req, res) => {
+  try {
+    const transactionData = req.body;
+    const formattedDate = moment(transactionData.date).format('YYYY-MM-DD');
+
+    let incomeTransaction;
+    let expenseTransaction;
+
+    if (transactionData.income.text && transactionData.income.amount) {
+      incomeTransaction = await Transactions.create({
+        date: formattedDate,
+        type: 'income',
+        text: transactionData.income.text,
+        amount: parseFloat(transactionData.income.amount),
+        description: transactionData.income.description
+      });
+    }
+
+    if (transactionData.expense.text && transactionData.expense.amount) {
+      expenseTransaction = await Transactions.create({
+        date: formattedDate,
+        type: 'expense',
+        text: transactionData.expense.text,
+        amount: parseFloat(transactionData.expense.amount),
+        description: transactionData.expense.description
+      });
+    }
+
+    // Update total income and total expense amounts
+    const totalIncome = await Transactions.sum('amount', {
+      where: { type: 'income' }
+    });
+    const totalExpense = await Transactions.sum('amount', {
+      where: { type: 'expense' }
+    });
+
+    res.status(201).json({
+      message: 'Transaction added successfully',
+      data: {
+        income: incomeTransaction,
+        expense: expenseTransaction
+      },
+      totalIncome,
+      totalExpense
+    });
+  } catch (error) {
+    console.error('Error adding transaction:', error);
+    res.status(500).json({ message: 'Error adding transaction' });
+  }
+};
+
+exports.getDailyExpenses = async (req, res) => {
+  try {
+    const transactions = await Transactions.findAll({
+      order: [['date', 'DESC']] // Fetch all transactions in descending order of date
+    });
+
+    const dailyExpenses = {
+      income: 0,
+      expense: 0
+    };
+
+    transactions.forEach((transaction) => {
+      if (transaction.type === 'income') {
+        dailyExpenses.income += parseFloat(transaction.amount);
+      } else {
+        dailyExpenses.expense += parseFloat(transaction.amount);
+      }
+    });
+
+    res.json({
+      dailyExpenses,
+      transactions
+    });
+  } catch (error) {
+    console.error('Error fetching daily expenses:', error);
+    res.status(500).json({ message: 'Error fetching daily expenses' });
+  }
+}; 
