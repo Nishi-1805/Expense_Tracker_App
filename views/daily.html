@@ -31,7 +31,7 @@
         <li><a href="/notes"><i class="fas fa-pencil" style="font-size: 24px;"></i></a></li>
         <li><a href="/daily" class="active"><i class="fas fa-money-bill-wave"
               style="font-size: 24px;"></i><strong>Daily</strong></a></li>
-        <li id="monthly-expense"><a href="/monthly"><i class="fas fa-money-bill-wave"
+        <li id="monthly-expense"><a href="/monthly"><i class="fas fa-chart-bar"
               style="font-size: 24px;"></i><strong>Monthly</strong></a></li>
         <li><a href="/yearly"><i class="fas fa-chart-line" style="font-size: 24px;"></i><strong>Yearly</strong></a></li>
       </ul>
@@ -194,37 +194,60 @@
       expenseDetailsElement.innerHTML = ''; // Clear the expense details element
 
       if (dailyExpensesData.transactions) {
-    dailyExpensesData.transactions.forEach((transaction) => {
-      if (transaction.type === 'income') {
-        totalIncome += parseFloat(transaction.amount);
-        const transactionElement = document.createElement('div');
-        transactionElement.className = 'transaction-item';
-        transactionElement.innerHTML = `
+        dailyExpensesData.transactions.forEach((transaction) => {
+          if (transaction.type === 'income') {
+            const transactionElement = document.createElement('div');
+            transactionElement.className = 'transaction-item';
+            transactionElement.innerHTML = `
           <p><strong>Date:</strong> ${transaction.date}</p>
           <p><strong>Text:</strong> ${transaction.text}</p>
           <p class="amount"><strong>Amount:</strong> ${parseFloat(transaction.amount).toFixed(2)} ${selectedCurrency}</p>
           <p><strong>Info:</strong> ${transaction.description}</p>
+          <button class="delete-btn" data-transaction-id="${transaction.id}">Delete</button>
         `;
-        incomeDetailsElement.appendChild(transactionElement);
-      } else {
-        totalExpense += parseFloat(transaction.amount);
-        const transactionElement = document.createElement('div');
-        transactionElement.className = 'transaction-item';
-        transactionElement.innerHTML = `
+            incomeDetailsElement.appendChild(transactionElement);
+          } else {
+            const transactionElement = document.createElement('div');
+            transactionElement.className = 'transaction-item';
+            transactionElement.innerHTML = `
           <p><strong>Date:</strong> ${transaction.date}</p>
           <p><strong>Text:</strong> ${transaction.text}</p>
           <p class="amount"><strong>Amount:</strong> ${parseFloat(transaction.amount).toFixed(2)} ${selectedCurrency}</p>
           <p><strong>Info:</strong> ${transaction.description}</p>
+          <button class="delete-btn" data-transaction-id="${transaction.id}">Delete</button>
         `;
-        expenseDetailsElement.appendChild(transactionElement);
+            expenseDetailsElement.appendChild(transactionElement);
+          }
+        });
       }
-    });
-  }
 
       if (totalIncomeSpan && totalExpenseSpan) {
         totalIncomeSpan.textContent = `${selectedCurrency} ${totalIncome.toFixed(2)}`;
         totalExpenseSpan.textContent = `${selectedCurrency} ${totalExpense.toFixed(2)}`;
       }
+
+      const deleteBtns = document.querySelectorAll('.delete-btn');
+
+  deleteBtns.forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      console.log('Delete button clicked');
+      const transactionId = e.target.dataset.transactionId;
+      try {
+        const response = await fetch(`/api/transactions/${transactionId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          console.log('Transaction deleted successfully!');
+        } else {
+          console.error('Error deleting transaction:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error deleting transaction:', error);
+      }
+      updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
+    });
+  });
     }
 
     const addTransactionForm = document.getElementById('add-transaction-form');
@@ -284,6 +307,17 @@
           const data = await response.json();
           console.log('Transaction added successfully!');
           addTransactionForm.reset();
+
+           // Update daily expenses UI
+      const totalIncomeSpan = document.getElementById('total-income');
+      const totalExpenseSpan = document.getElementById('total-expense');
+
+      if (incomeTransaction) {
+        totalIncomeSpan.textContent = `${selectedCurrency} ${(parseFloat(totalIncomeSpan.textContent.replace(selectedCurrency, '')) + parseFloat(incomeAmount)).toFixed(2)}`;
+      }
+      if (expenseTransaction) {
+        totalExpenseSpan.textContent = `${selectedCurrency} ${(parseFloat(totalExpenseSpan.textContent.replace(selectedCurrency, '')) + parseFloat(expenseAmount)).toFixed(2)}`;
+      }
 
           // Update daily expenses UI
           updateDailyExpensesUI(data, selectedCurrency);
