@@ -1,3 +1,5 @@
+
+
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
@@ -131,72 +133,83 @@ body {
   background-color: #444;
 }
 
-.balance {
-  font-size: 24px;
-  font-weight: bold;
-  margin-left: 10px;
-}
 
 /* Income and Expense Section */
-
-.income-expense-section {
-  margin-top: 20px;
-}
-
-.carry-forward-section {
-  background-color: #4d084f;
-  padding: 5px;
-  border: 1px solid #410c47;
-  width: 100%;
+.container {
+  margin-top: 5px;
   display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
+  gap: 20px; /* Space between sections */
   margin-bottom: 20px;
-  box-sizing: border-box;
 }
 
-.carry-forward-section h2 {
-  font-size: 18px;
-  margin-right: 10px;
+.income-section, .expense-section {
   flex: 1;
-  max-width: 50%;
+  padding: 20px;
+  border-radius: 10px;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
 }
 
-.carry-forward-section p {
-  font-size: 24px;
-  font-weight: bold;
-  flex: 1;
+.income-section {
+  background-color: #d4edda; /* Light green for income */
+}
+
+.expense-section {
+  background-color: #f8d7da; /* Light red for expense */
+}
+
+#total-income, #total-expense {
   text-align: right;
-  max-width: 50%;
+  font-weight: bold;
 }
 
-.total-income-box, .total-expense-box {
-  background-color: #f7f7f7;
-  padding: 10px;
-  border: 1px solid #ddd;
-  width: 100%;
+.income-section-header, .expense-section-header {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between; /* Aligns children to be on opposite ends */
+  align-items: center; /* Centers items vertically */
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd; /* Optional, for visual separation */
+}
+
+.income-section-header h2, .expense-section-header h2 {
+  margin: 0;
+  font-size: 22px; /* Adjust as needed */
+}
+
+.income-section-header p, .expense-section-header p {
+  margin: 0;
+  font-size: 22px; /* Match the font size of h2 */
+  font-weight: bold; /* Make the currency text bold */
+}
+
+
+/* Align transaction details horizontally */
+.transaction-item {
+  display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  box-sizing: border-box;
+  margin-bottom: 10px; /* Space between transaction items */
 }
 
-.total-income-box h2, .total-expense-box h2 {
-  font-size: 18px;
-  margin-right: 10px;
-  
-  max-width: 50%;
+.transaction-item p {
+  margin: 0;
+  flex: 1;
+  text-align: left; /* Align text to the left */
 }
 
-.total-income-box p, .total-expense-box p {
-  font-size: 24px;
-  font-weight: bold;
- 
-  text-align: right;
-  max-width: 50%;
+.transaction-item .amount {
+  text-align: left; /* Align amount to the right */
+}
+
+/* Adjust for smaller screens */
+@media (max-width: 600px) {
+  .transaction-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .transaction-item p {
+    text-align: left;
+  }
 }
 
 /* Add Transaction Button and Form */
@@ -253,4 +266,23 @@ body {
 
 #submit-transaction-btn:hover {
   background-color: #3e8e41;
+}
+
+.delete-btn {
+  background-color: #FF3737; /* red color */
+  color: #FFFFFF; /* white text color */
+  border: none;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.delete-btn:hover {
+  background-color: #FF6969; /* darker red color on hover */
+}
+
+.delete-btn:active {
+  background-color: #FF3737; /* original red color on active */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
