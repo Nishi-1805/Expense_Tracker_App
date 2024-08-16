@@ -2,173 +2,310 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Day-to-Day Expenses - Notes</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/daily.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Day-to-Day Expenses - Notes</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/daily.css">
 </head>
 
 <body>
-    <header>
-        <div class="header-container">
-            <h1>Day-to-Day Expenses</h1>
-            <div class="top-right-icons">
-                <i class="fas fa-cloud" id="onedrive-icon"></i>
-                <i class="fas fa-drive" id="google-drive-icon"></i>
-                <i class="fas fa-search" id="search-icon"></i>
-                <input type="search" id="search-input" placeholder="Search..." style="display: none;">
-                <i class="fa-solid fa-bars" id="more-options-icon"></i>
-                <ul id="more-options-list">
-                    <li><a href="#">Charts</a></li>
-                    <li><a href="#">Need Help</a></li>
-                    <li><a href="#">Settings</a></li>
-                </ul>
-            </div>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="/notes"><i class="fas fa-pencil" style="font-size: 24px;"></i></a></li>
-                <li><a href="/daily" class="active"><i class="fas fa-money-bill-wave"
-                            style="font-size: 24px;"></i><strong>Daily</strong></a></li>
-                <li id="monthly-expense"><a href="/monthly"><i class="fas fa-money-bill-wave"
-                            style="font-size: 24px;"></i><strong>Monthly</strong></a></li>
-                <li><a href="/yearly"><i class="fas fa-chart-line"
-                            style="font-size: 24px;"></i><strong>Yearly</strong></a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section class="daily-expense-container">
-            <div class="date-bar">
-                <button id="prev-date-btn"><i class="fas fa-chevron-left"></i></button>
-                <span id="current-date">August 13, 2024</span>
-                <button id="next-date-btn"><i class="fas fa-chevron-right"></i></button>
-                <span id="balance">$1000.00</span>
-            </div>
-            <section class="income-expense-section">
-                <div class="carry-forward-section">
-                    <h2>C/F</h2>
-                    <p>$<span id="carry-forward-amount">0.00</span></p>
-                </div>
-                <div class="total-income-box">
-                    <h2>Total Income (Credit)</h2>
-                    <p id="total-income">$0.00</p>
-                </div>
-                <div class="total-expense-box">
-                    <h2>Total Expense (Debit)</h2>
-                    <p id="total-expense">$0.00</p>
-                </div>
-            </section>
-            <button id="add-transaction-btn"><i class="fa-solid fa-plus"></i></button>
-            <form id="add-transaction-form" style="display: none;">
-                <h2>Add Transaction</h2>
-                <section class="income-section">
-                    <h3>Income (Credit)</h3>
-                    <input type="text" id="income-text" placeholder="Enter text">
-                    <input type="number" id="income-amount" placeholder="Enter amount">
-                    <textarea id="income-description" placeholder="Enter description"></textarea>
-                </section>
-                <section class="expense-section">
-                    <h3>Expense (Debit)</h3>
-                    <input type="text" id="expense-text" placeholder="Enter text">
-                    <input type="number" id="expense-amount" placeholder="Enter amount">
-                    <textarea id="expense-description" placeholder="Enter description"></textarea>
-                </section>
-                <button id="submit-transaction-btn" type="submit">Add Transaction</button>
-            </form>
+  <header>
+    <div class="header-container">
+      <h1>Day-to-Day Expenses</h1>
+      <div class="top-right-icons">
+        <i class="fas fa-cloud" id="onedrive-icon"></i>
+        <i class="fas fa-drive" id="google-drive-icon"></i>
+        <i class="fas fa-search" id="search-icon"></i>
+        <input type="search" id="search-input" placeholder="Search..." style="display: none;">
+        <i class="fa-solid fa-bars" id="more-options-icon"></i>
+        <ul id="more-options-list">
+          <li><a href="#">Charts</a></li>
+          <li><a href="#">Need Help</a></li>
+          <li><a href="#">Settings</a></li>
+        </ul>
+      </div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="/notes"><i class="fas fa-pencil" style="font-size: 24px;"></i></a></li>
+        <li><a href="/daily" class="active"><i class="fas fa-money-bill-wave"
+              style="font-size: 24px;"></i><strong>Daily</strong></a></li>
+        <li id="monthly-expense"><a href="/monthly"><i class="fas fa-money-bill-wave"
+              style="font-size: 24px;"></i><strong>Monthly</strong></a></li>
+        <li><a href="/yearly"><i class="fas fa-chart-line" style="font-size: 24px;"></i><strong>Yearly</strong></a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section class="daily-expense-container">
+      <div class="date-bar">
+        <button id="prev-date-btn"><i class="fas fa-chevron-left"></i></button>
+        <span id="current-date">August 13, 2024</span>
+        <button id="next-date-btn"><i class="fas fa-chevron-right"></i></button>
+      </div>
+      <div class="container">
+        <section class="income-section">
+          <div class="income-section-header">
+            <h2>Total Income (Credit)</h2>
+            <p id="total-income">$0.00</p>
+          </div>
+          <div id="income-details"></div>
         </section>
-    </main>
-    <script>
-        const monthlyNavItem = document.getElementById('monthly-expense');
 
-        monthlyNavItem.addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = '/monthly';
+        <section class="expense-section">
+          <div class="expense-section-header">
+            <h2>Total Expense (Debit)</h2>
+            <p id="total-expense">$0.00</p>
+          </div>
+          <div id="expense-details"></div>
+        </section>
+      </div>
+
+
+      <button id="add-transaction-btn"><i class="fa-solid fa-plus"></i></button>
+      <form id="add-transaction-form" style="display: none;">
+        <h2>Add Transaction</h2>
+        <input type="date" id="transaction-date" placeholder="Select date">
+        <section class="income-section">
+          <h3>Income (Credit)</h3>
+          <input type="text" id="income-text" placeholder="Enter text">
+          <input type="number" id="income-amount" placeholder="Enter amount">
+          <textarea id="income-description" placeholder="Enter description"></textarea>
+        </section>
+        <section class="expense-section">
+          <h3>Expense (Debit)</h3>
+          <input type="text" id="expense-text" placeholder="Enter text">
+          <input type="number" id="expense-amount" placeholder="Enter amount">
+          <textarea id="expense-description" placeholder="Enter description"></textarea>
+        </section>
+        <button id="submit-transaction-btn" type="submit">Add Transaction</button>
+      </form>
+    </section>
+  </main>
+  <script>
+    const monthlyNavItem = document.getElementById('monthly-expense');
+
+    monthlyNavItem.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '/monthly';
+    });
+
+    const searchIcon = document.getElementById('search-icon');
+    const searchInput = document.getElementById('search-input');
+    const moreOptionsIcon = document.getElementById('more-options-icon');
+    const moreOptionsList = document.getElementById('more-options-list');
+
+    searchIcon.addEventListener('click', () => {
+      searchInput.style.display = 'block';
+    });
+    moreOptionsIcon.addEventListener('click', () => {
+      moreOptionsList.classList.toggle('show');
+    });
+
+    // Add event listener to document to hide menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!moreOptionsList.contains(e.target) && !moreOptionsIcon.contains(e.target)) {
+        moreOptionsList.classList.remove('show');
+      }
+    });
+
+    // JavaScript code for daily expense page
+    const currentDateSpan = document.getElementById('current-date');
+    const prevDateBtn = document.getElementById('prev-date-btn');
+    const nextDateBtn = document.getElementById('next-date-btn');
+    const addTransactionBtn = document.getElementById('add-transaction-btn');
+    const totalIncomeSpan = document.getElementById('total-income');
+    const totalExpenseSpan = document.getElementById('total-expense');
+
+    // Retrieve the stored currency from local storage
+    const selectedCurrency = localStorage.getItem('selectedCurrency');
+
+    if (selectedCurrency) {
+      // Display the selected currency on the daily expense page
+      totalIncomeSpan.textContent = `${selectedCurrency} 0.00`;
+      totalExpenseSpan.textContent = `${selectedCurrency} 0.00`;
+    } else {
+      // Handle the case where no currency is selected
+      totalIncomeSpan.textContent = 'Total Income (Credit): 0.00';
+      totalExpenseSpan.textContent = 'Total Expense (Debit): 0.00';
+    }
+    let currentDate = new Date('2024-08-15'); // initialize with a fixed date
+
+    prevDateBtn.addEventListener('click', () => {
+      currentDate.setDate(currentDate.getDate() - 1);
+      updateDateDisplay();
+    });
+
+    nextDateBtn.addEventListener('click', () => {
+      currentDate.setDate(currentDate.getDate() + 1);
+      updateDateDisplay();
+    });
+
+    function updateDateDisplay() {
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const day = currentDate.getDate();
+      const month = monthNames[currentDate.getMonth()];
+      const year = currentDate.getFullYear();
+      currentDateSpan.textContent = `${month} ${day}, ${year}`;
+    }
+
+    addTransactionBtn.addEventListener('click', () => {
+      addTransactionForm.style.display = 'block';
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('#add-transaction-form, #add-transaction-btn')) {
+        addTransactionForm.style.display = 'none';
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const dailyExpensesResponse = await fetch('/api/transactions');
+        const dailyExpensesData = await dailyExpensesResponse.json();
+        updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
+      } catch (error) {
+        console.error('Error fetching daily expenses:', error);
+      }
+    });
+
+    function updateDailyExpensesUI(dailyExpensesData, selectedCurrency) {
+      console.log('updateDailyExpensesUI called');
+      console.log(dailyExpensesData);
+      console.log(selectedCurrency);
+      const totalIncomeSpan = document.getElementById('total-income');
+      const totalExpenseSpan = document.getElementById('total-expense');
+      const incomeDetailsElement = document.getElementById('income-details');
+      const expenseDetailsElement = document.getElementById('expense-details');
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+
+      if (dailyExpensesData.dailyExpenses) {
+        totalIncome = dailyExpensesData.dailyExpenses.income;
+        totalExpense = dailyExpensesData.dailyExpenses.expense;
+      } else {
+        totalIncome = dailyExpensesData.totalIncome;
+        totalExpense = dailyExpensesData.totalExpense;
+      }
+
+      incomeDetailsElement.innerHTML = ''; // Clear the income details element
+      expenseDetailsElement.innerHTML = ''; // Clear the expense details element
+
+      if (dailyExpensesData.transactions) {
+    dailyExpensesData.transactions.forEach((transaction) => {
+      if (transaction.type === 'income') {
+        totalIncome += parseFloat(transaction.amount);
+        const transactionElement = document.createElement('div');
+        transactionElement.className = 'transaction-item';
+        transactionElement.innerHTML = `
+          <p><strong>Date:</strong> ${transaction.date}</p>
+          <p><strong>Text:</strong> ${transaction.text}</p>
+          <p class="amount"><strong>Amount:</strong> ${parseFloat(transaction.amount).toFixed(2)} ${selectedCurrency}</p>
+          <p><strong>Info:</strong> ${transaction.description}</p>
+        `;
+        incomeDetailsElement.appendChild(transactionElement);
+      } else {
+        totalExpense += parseFloat(transaction.amount);
+        const transactionElement = document.createElement('div');
+        transactionElement.className = 'transaction-item';
+        transactionElement.innerHTML = `
+          <p><strong>Date:</strong> ${transaction.date}</p>
+          <p><strong>Text:</strong> ${transaction.text}</p>
+          <p class="amount"><strong>Amount:</strong> ${parseFloat(transaction.amount).toFixed(2)} ${selectedCurrency}</p>
+          <p><strong>Info:</strong> ${transaction.description}</p>
+        `;
+        expenseDetailsElement.appendChild(transactionElement);
+      }
+    });
+  }
+
+      if (totalIncomeSpan && totalExpenseSpan) {
+        totalIncomeSpan.textContent = `${selectedCurrency} ${totalIncome.toFixed(2)}`;
+        totalExpenseSpan.textContent = `${selectedCurrency} ${totalExpense.toFixed(2)}`;
+      }
+    }
+
+    const addTransactionForm = document.getElementById('add-transaction-form');
+    const submitTransactionBtn = document.getElementById('submit-transaction-btn');
+
+    // Add event listener to submit transaction button
+    submitTransactionBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const transactionDate = document.getElementById('transaction-date').value;
+      const incomeText = document.getElementById('income-text').value;
+      const incomeAmount = document.getElementById('income-amount').value;
+      const incomeDescription = document.getElementById('income-description').value;
+      const expenseText = document.getElementById('expense-text').value;
+      const expenseAmount = document.getElementById('expense-amount').value;
+      const expenseDescription = document.getElementById('expense-description').value;
+
+      if (!incomeText && !expenseText) {
+        alert('Please enter a text for the transaction');
+        return;
+      }
+
+      let incomeTransaction = {};
+      let expenseTransaction = {};
+
+      if (incomeText && incomeAmount) {
+        incomeTransaction = {
+          type: 'income',
+          text: incomeText,
+          amount: incomeAmount,
+          description: incomeDescription
+        };
+      }
+
+      if (expenseText && expenseAmount) {
+        expenseTransaction = {
+          type: 'expense',
+          text: expenseText,
+          amount: expenseAmount,
+          description: expenseDescription
+        };
+      }
+
+      const transactionData = {
+        date: transactionDate,
+        income: incomeTransaction,
+        expense: expenseTransaction
+      };
+
+      try {
+        const response = await fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(transactionData),
         });
 
-        const searchIcon = document.getElementById('search-icon');
-        const searchInput = document.getElementById('search-input');
-        const moreOptionsIcon = document.getElementById('more-options-icon');
-        const moreOptionsList = document.getElementById('more-options-list');
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Transaction added successfully!');
+          addTransactionForm.reset();
 
-        searchIcon.addEventListener('click', () => {
-            searchInput.style.display = 'block';
-        });
-        moreOptionsIcon.addEventListener('click', () => {
-            moreOptionsList.classList.toggle('show');
-        });
+          // Update daily expenses UI
+          updateDailyExpensesUI(data, selectedCurrency);
 
-        // Add event listener to document to hide menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!moreOptionsList.contains(e.target) && !moreOptionsIcon.contains(e.target)) {
-                moreOptionsList.classList.remove('show');
-            }
-        });
-
-        // JavaScript code for daily expense page
-        const currentDateSpan = document.getElementById('current-date');
-        const prevDateBtn = document.getElementById('prev-date-btn');
-        const nextDateBtn = document.getElementById('next-date-btn');
-        const balanceSpan = document.getElementById('balance');
-        const addTransactionBtn = document.getElementById('add-transaction-btn');
-        const addTransactionForm = document.getElementById('add-transaction-form');
-        const totalIncomeSpan = document.getElementById('total-income');
-        const totalExpenseSpan = document.getElementById('total-expense');
-
-        // Retrieve the stored currency from local storage
-        const selectedCurrency = localStorage.getItem('selectedCurrency');
-
-        if (selectedCurrency) {
-            // Display the selected currency on the daily expense page
-            balanceSpan.textContent = `Balance: ${selectedCurrency} 0.00`;
+          // Clear local storage
+          localStorage.removeItem('transactions');
         } else {
-            // Handle the case where no currency is selected
-            balanceSpan.textContent = 'Balance: 0.00';
+          console.error('Error adding transaction:', response.statusText);
+          // Update UI to reflect error
+          const errorElement = document.getElementById('error-message');
+          errorElement.textContent = 'Error adding transaction: ' + response.statusText;
+          errorElement.style.display = 'block';
         }
-
-        let currentDate = new Date('2024-08-15'); // initialize with a fixed date
-
-        prevDateBtn.addEventListener('click', () => {
-            currentDate.setDate(currentDate.getDate() - 1);
-            updateDateDisplay();
-        });
-
-        nextDateBtn.addEventListener('click', () => {
-            currentDate.setDate(currentDate.getDate() + 1);
-            updateDateDisplay();
-        });
-
-        function updateDateDisplay() {
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            const day = currentDate.getDate();
-            const month = monthNames[currentDate.getMonth()];
-            const year = currentDate.getFullYear();
-            currentDateSpan.textContent = `${month} ${day}, ${year}`;
-        }
-
-        addTransactionBtn.addEventListener('click', () => {
-            addTransactionForm.style.display = 'block';
-        });
-
-        document.addEventListener('click', (event) => {
-            if (event.target !== addTransactionForm && event.target !== addTransactionBtn) {
-                addTransactionForm.style.display = 'none';
-            }
-        });
-
-        function decrementDate(date) {
-            // implement date decrement logic
-        }
-
-        function incrementDate(date) {
-            // implement date increment logic
-        }
-
-        function updateBalance() {
-            // update balance logic
-        }
-    </script>
+      } catch (error) {
+        console.error('Error adding transaction:', error);
+        // Update UI to reflect error
+        const errorElement = document.getElementById('error-message');
+        errorElement.textContent = 'Error adding transaction: ' + error.message;
+        errorElement.style.display = 'block';
+      }
+    });
+  </script>
 </body>
 
 </html>
