@@ -2,6 +2,7 @@ const Sequelize = require('sequelize');
 const db = require('../util/database');
 const Userfile = require('./Userfile');
 const bcrypt = require('bcrypt');
+const Transaction = require('./daily-expense');
 
 const PrimaryProfile = db.define('PrimaryProfile', {
   id: {
