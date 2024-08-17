@@ -42,21 +42,14 @@
             const password = passwordInput.value.trim();
 
             fetch('/api/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email, password }),
-})
-   .then((response) => {
-                    if (response.ok) {
-                        return response.json();
-                    } else {
-                        return response.text().then((message) => {
-                            throw new Error(message);
-                        });
-                    }
-                })
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            })
+            .then((response) => response.json())
                 .then((data) => {
-                    if (data.redirect) {
+                    if (data.token) {
+                        localStorage.setItem('token', data.token);
                         window.location.href = '/notes';
                     } else {
                         alert(data.message);
