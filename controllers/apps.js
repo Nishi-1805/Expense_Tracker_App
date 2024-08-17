@@ -5,6 +5,8 @@ const Transactions = require('../models/daily-expense');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 const moment = require('moment');
+const jwt = require('jsonwebtoken');
+const { authenticate, generateAccessToken } = require('../middleware/auth');
 
 exports.getCurrencies = async (req, res) => {
   try {
@@ -96,57 +98,66 @@ exports.login = async (req, res) => {
     if (!primaryProfile) {
       return res.status(404).json({ message: 'Email not found' });
     }
-    if (!(await primaryProfile.comparePassword(password))) {
+
+    const isValidPassword = await primaryProfile.comparePassword(password);
+    if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid password' });
     }
-    res.status(200).json({ message: 'Login successful', redirect: true });
+
+    // Generate token
+    const token = generateAccessToken(primaryProfile.id);
+
+    // Send token back to client
+    res.json({ token });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error logging in:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
 exports.addTransaction = async (req, res) => {
   try {
+    const { user } = req;
     const transactionData = req.body;
     const formattedDate = moment(transactionData.date).format('YYYY-MM-DD');
 
-    let incomeTransaction;
-    let expenseTransaction;
+    let incomeTransaction = null;
+    let expenseTransaction = null;
 
-    if (transactionData.income.text && transactionData.income.amount) {
+    if (transactionData.income) {
       incomeTransaction = await Transactions.create({
         date: formattedDate,
         type: 'income',
         text: transactionData.income.text,
         amount: parseFloat(transactionData.income.amount),
-        description: transactionData.income.description
+        description: transactionData.income.description,
+        userId: user.id,
       });
     }
 
-    if (transactionData.expense.text && transactionData.expense.amount) {
+    if (transactionData.expense) {
       expenseTransaction = await Transactions.create({
         date: formattedDate,
         type: 'expense',
         text: transactionData.expense.text,
         amount: parseFloat(transactionData.expense.amount),
-        description: transactionData.expense.description
+        description: transactionData.expense.description,
+        userId: user.id,
       });
     }
 
-    // Update total income and total expense amounts
     const totalIncome = await Transactions.sum('amount', {
-      where: { type: 'income' }
-    });
+      where: { type: 'income', userId: user.id }
+    }) || 0;
     const totalExpense = await Transactions.sum('amount', {
-      where: { type: 'expense' }
-    });
+      where: { type: 'expense', userId: user.id }
+    }) || 0;
 
     res.status(201).json({
       message: 'Transaction added successfully',
       data: {
         income: incomeTransaction,
-        expense: expenseTransaction
+        expense: expenseTransaction,
       },
       totalIncome,
       totalExpense
@@ -159,13 +170,15 @@ exports.addTransaction = async (req, res) => {
 
 exports.getDailyExpenses = async (req, res) => {
   try {
+    const userId = req.user.id;
     const transactions = await Transactions.findAll({
-      order: [['date', 'DESC']] // Fetch all transactions in descending order of date
+      where: { userId },
+      order: [['date', 'DESC']]
     });
 
     const dailyExpenses = {
       income: 0,
-      expense: 0
+      expense: 0,
     };
 
     transactions.forEach((transaction) => {
@@ -178,10 +191,29 @@ exports.getDailyExpenses = async (req, res) => {
 
     res.json({
       dailyExpenses,
-      transactions
+      transactions,
     });
   } catch (error) {
     console.error('Error fetching daily expenses:', error);
     res.status(500).json({ message: 'Error fetching daily expenses' });
   }
-}; 
+};
+
+exports.deleteTransaction = async (req, res) => {
+  try {
+    const transactionId = req.params.transactionId;
+    const userId = req.user.id; // Ensure user is properly authenticated
+    const deletionResult = await Transactions.destroy({
+      where: { id: transactionId, userId }
+    });
+
+    if (deletionResult) {
+      res.status(200).json({ message: 'Transaction deleted successfully!' });
+    } else {
+      res.status(404).json({ message: 'Transaction not found or not authorized to delete' });
+    }
+  } catch (error) {
+    console.error('Error deleting transaction:', error);
+    res.status(500).json({ message: 'Error deleting transaction' });
+  }
+};
