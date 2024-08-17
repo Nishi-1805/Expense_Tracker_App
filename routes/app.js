@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const controllers = require('../controllers/apps');
+const userauthentication = require('../middleware/auth');
 
 router.get('/', controllers.getAppPage);
 router.get('/currencies', controllers.getCurrencies);
@@ -9,11 +10,10 @@ router.post('/login',controllers.login);
 router.get('/new-user', controllers.getNewUser);
 
 router.get('/notes', controllers.getNotesPage);
-router.get('/daily', controllers.getDailyExpensePage);
-
-router.get('/transactions', controllers.getDailyExpenses);
-router.post('/transactions', controllers.addTransaction);
-router.delete('/transactions/:transactionId', controllers.deleteTransaction);
+router.get('/daily', userauthentication.authenticate, controllers.getDailyExpensePage);
+router.get('/transactions', userauthentication.authenticate, controllers.getDailyExpenses);
+router.post('/transactions', userauthentication.authenticate, controllers.addTransaction);
+router.delete('/transactions/:transactionId', userauthentication.authenticate, controllers.deleteTransaction);
 router.get('/monthly', controllers.getMonthlyExpensePage);
 router.get('/yearly', controllers.getYearlyExpensePage);
 router.post('/users', controllers.createUser);
