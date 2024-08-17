@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const db = require('../util/database');
+const User = require('./Userfile');
 
 const Transaction = db.define('Transaction', {
   date: {
@@ -16,7 +17,15 @@ const Transaction = db.define('Transaction', {
   },
   description: {
     type: DataTypes.TEXT
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: User,
+      key: 'id'
+    }
   }
 });
+
 
 module.exports = Transaction;
