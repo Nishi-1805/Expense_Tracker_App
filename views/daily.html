@@ -157,98 +157,108 @@
     document.addEventListener('click', (event) => {
       if (!event.target.closest('#add-transaction-form, #add-transaction-btn')) {
         addTransactionForm.style.display = 'none';
-      }
+      } 
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const dailyExpensesResponse = await fetch('/api/transactions');
-        const dailyExpensesData = await dailyExpensesResponse.json();
-        updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
-      } catch (error) {
-        console.error('Error fetching daily expenses:', error);
+  try {
+    const token = localStorage.getItem('token');
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+    const dailyExpensesResponse = await fetch('/api/transactions', { headers });
+    const dailyExpensesData = await dailyExpensesResponse.json();
+    updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
+  } catch (error) {
+    console.error('Error fetching daily expenses:', error);
+  }
+});
+
+function updateDailyExpensesUI(dailyExpensesData, selectedCurrency) {
+  if (!dailyExpensesData) {
+    console.error('Error: dailyExpensesData is null or undefined');
+    return;
+  }
+
+  console.log('updateDailyExpensesUI called');
+  console.log(dailyExpensesData);
+  console.log(selectedCurrency);
+
+  const totalIncomeSpan = document.getElementById('total-income');
+  const totalExpenseSpan = document.getElementById('total-expense');
+  const incomeDetailsElement = document.getElementById('income-details');
+  const expenseDetailsElement = document.getElementById('expense-details');
+
+  let totalIncome = 0;
+  let totalExpense = 0;
+
+  if (dailyExpensesData.dailyExpenses) {
+    totalIncome = dailyExpensesData.dailyExpenses.income;
+    totalExpense = dailyExpensesData.dailyExpenses.expense;
+  } else {
+    totalIncome = dailyExpensesData.totalIncome;
+    totalExpense = dailyExpensesData.totalExpense;
+  }
+
+  incomeDetailsElement.innerHTML = ''; // Clear the income details element
+  expenseDetailsElement.innerHTML = ''; // Clear the expense details element
+
+  if (dailyExpensesData.transactions) {
+    dailyExpensesData.transactions.forEach((transaction) => {
+      const transactionElement = document.createElement('div');
+      transactionElement.className = 'transaction-item';
+      transactionElement.innerHTML = `
+        <p><strong>Date:</strong> ${transaction.date}</p>
+        <p><strong>Text:</strong> ${transaction.text}</p>
+        <p class="amount"><strong>Amount:</strong> ${transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00'} ${selectedCurrency}</p>
+        <p><strong>Info:</strong> ${transaction.description}</p>
+        <button class="delete-btn" data-transaction-id="${transaction.id}">Delete</button>
+      `;
+      if (transaction.type === 'income') {
+        incomeDetailsElement.appendChild(transactionElement);
+      } else {
+        expenseDetailsElement.appendChild(transactionElement);
       }
     });
+  }
 
-    function updateDailyExpensesUI(dailyExpensesData, selectedCurrency) {
-      console.log('updateDailyExpensesUI called');
-      console.log(dailyExpensesData);
-      console.log(selectedCurrency);
-      const totalIncomeSpan = document.getElementById('total-income');
-      const totalExpenseSpan = document.getElementById('total-expense');
-      const incomeDetailsElement = document.getElementById('income-details');
-      const expenseDetailsElement = document.getElementById('expense-details');
+  if (totalIncomeSpan && totalExpenseSpan) {
+    totalIncomeSpan.textContent = `${selectedCurrency} ${parseFloat(totalIncome).toFixed(2)}`;
+    totalExpenseSpan.textContent = `${selectedCurrency} ${parseFloat(totalExpense).toFixed(2)}`;
+  }
 
-      let totalIncome = 0;
-      let totalExpense = 0;
-
-      if (dailyExpensesData.dailyExpenses) {
-        totalIncome = dailyExpensesData.dailyExpenses.income;
-        totalExpense = dailyExpensesData.dailyExpenses.expense;
-      } else {
-        totalIncome = dailyExpensesData.totalIncome;
-        totalExpense = dailyExpensesData.totalExpense;
-      }
-
-      incomeDetailsElement.innerHTML = ''; // Clear the income details element
-      expenseDetailsElement.innerHTML = ''; // Clear the expense details element
-
-      if (dailyExpensesData.transactions) {
-        dailyExpensesData.transactions.forEach((transaction) => {
-          if (transaction.type === 'income') {
-            const transactionElement = document.createElement('div');
-            transactionElement.className = 'transaction-item';
-            transactionElement.innerHTML = `
-          <p><strong>Date:</strong> ${transaction.date}</p>
-          <p><strong>Text:</strong> ${transaction.text}</p>
-          <p class="amount"><strong>Amount:</strong> ${parseFloat(transaction.amount).toFixed(2)} ${selectedCurrency}</p>
-          <p><strong>Info:</strong> ${transaction.description}</p>
-          <button class="delete-btn" data-transaction-id="${transaction.id}">Delete</button>
-        `;
-            incomeDetailsElement.appendChild(transactionElement);
-          } else {
-            const transactionElement = document.createElement('div');
-            transactionElement.className = 'transaction-item';
-            transactionElement.innerHTML = `
-          <p><strong>Date:</strong> ${transaction.date}</p>
-          <p><strong>Text:</strong> ${transaction.text}</p>
-          <p class="amount"><strong>Amount:</strong> ${parseFloat(transaction.amount).toFixed(2)} ${selectedCurrency}</p>
-          <p><strong>Info:</strong> ${transaction.description}</p>
-          <button class="delete-btn" data-transaction-id="${transaction.id}">Delete</button>
-        `;
-            expenseDetailsElement.appendChild(transactionElement);
-          }
-        });
-      }
-
-      if (totalIncomeSpan && totalExpenseSpan) {
-        totalIncomeSpan.textContent = `${selectedCurrency} ${totalIncome.toFixed(2)}`;
-        totalExpenseSpan.textContent = `${selectedCurrency} ${totalExpense.toFixed(2)}`;
-      }
-
-      const deleteBtns = document.querySelectorAll('.delete-btn');
-
+  const deleteBtns = document.querySelectorAll('.delete-btn');
   deleteBtns.forEach((btn) => {
     btn.addEventListener('click', async (e) => {
-      console.log('Delete button clicked');
       const transactionId = e.target.dataset.transactionId;
       try {
+        const token = localStorage.getItem('token');
         const response = await fetch(`/api/transactions/${transactionId}`, {
           method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
         });
 
         if (response.ok) {
           console.log('Transaction deleted successfully!');
+          // Fetch and update the UI after successful deletion
+          const dailyExpensesResponse = await fetch('/api/transactions', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+          const dailyExpensesData = await dailyExpensesResponse.json();
+          updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
         } else {
           console.error('Error deleting transaction:', response.statusText);
         }
       } catch (error) {
         console.error('Error deleting transaction:', error);
       }
-      updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
     });
   });
-    }
+}
 
     const addTransactionForm = document.getElementById('add-transaction-form');
     const submitTransactionBtn = document.getElementById('submit-transaction-btn');
@@ -291,55 +301,41 @@
       }
 
       const transactionData = {
-        date: transactionDate,
-        income: incomeTransaction,
-        expense: expenseTransaction
-      };
+      date: transactionDate,
+      income: incomeText ? { text: incomeText, amount: incomeAmount, description: incomeDescription } : null,
+      expense: expenseText ? { text: expenseText, amount: expenseAmount, description: expenseDescription } : null
+    };
 
-      try {
-        const response = await fetch('/api/transactions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(transactionData),
-        });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(transactionData),
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Transaction added successfully!');
-          addTransactionForm.reset();
-
-           // Update daily expenses UI
-      const totalIncomeSpan = document.getElementById('total-income');
-      const totalExpenseSpan = document.getElementById('total-expense');
-
-      if (incomeTransaction) {
-        totalIncomeSpan.textContent = `${selectedCurrency} ${(parseFloat(totalIncomeSpan.textContent.replace(selectedCurrency, '')) + parseFloat(incomeAmount)).toFixed(2)}`;
-      }
-      if (expenseTransaction) {
-        totalExpenseSpan.textContent = `${selectedCurrency} ${(parseFloat(totalExpenseSpan.textContent.replace(selectedCurrency, '')) + parseFloat(expenseAmount)).toFixed(2)}`;
-      }
-
-          // Update daily expenses UI
-          updateDailyExpensesUI(data, selectedCurrency);
-
-          // Clear local storage
-          localStorage.removeItem('transactions');
-        } else {
-          console.error('Error adding transaction:', response.statusText);
-          // Update UI to reflect error
-          const errorElement = document.getElementById('error-message');
-          errorElement.textContent = 'Error adding transaction: ' + response.statusText;
-          errorElement.style.display = 'block';
-        }
-      } catch (error) {
-        console.error('Error adding transaction:', error);
-        // Update UI to reflect error
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Transaction added successfully!');
+        addTransactionForm.reset();
+        updateDailyExpensesUI(data, localStorage.getItem('selectedCurrency'));
+      } else {
+        console.error('Error adding transaction:', response.statusText);
         const errorElement = document.getElementById('error-message');
-        errorElement.textContent = 'Error adding transaction: ' + error.message;
+        errorElement.textContent = 'Error adding transaction: ' + response.statusText;
         errorElement.style.display = 'block';
       }
-    });
-  </script>
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      const errorElement = document.getElementById('error-message');
+      errorElement.textContent = 'Error adding transaction: ' + error.message;
+      errorElement.style.display = 'block';
+    }
+  });
+    </script>
 </body>
 
 </html>
