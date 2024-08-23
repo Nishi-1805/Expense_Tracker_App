@@ -1,10 +1,13 @@
 const jwt = require('jsonwebtoken');
 const PrimaryProfile = require('../models/primaryprofile');
+const dotenv = require('dotenv');
+dotenv.config({ path: './util/.env' });
+const session = require('express-session');
 
-const SECRET_KEY = '0b2c9fd7829bdbf853bf2193f0b538bc5ba22aeb8ff2d1eb9d44c801a3d535f3';
+const SECRET_KEY = process.env.TOKEN_SECRET;;
 
 const generateAccessToken = (userId) => {
-  return jwt.sign({ userId }, SECRET_KEY, { expiresIn: '1000h' });
+  return jwt.sign({ userId }, SECRET_KEY, { expiresIn: '2000h' });
 };
 
 const authenticate = async (req, res, next) => {
@@ -13,14 +16,16 @@ const authenticate = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-
+    console.log(`Token: ${token}`);
     const decoded = jwt.verify(token, SECRET_KEY);
+    console.log(`Decoded token: ${decoded}`);
     const userId = decoded.userId;
     const primaryProfile = await PrimaryProfile.findByPk(userId);
     if (!primaryProfile) {
       return res.status(401).json({ message: 'Invalid token' });
     }
     req.user = primaryProfile;
+    req.session.isPremium = primaryProfile.isPremium; 
     next();
   } catch (error) {
     console.error('Error authenticating:', error);
