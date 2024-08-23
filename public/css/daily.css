@@ -286,3 +286,20 @@ body {
   background-color: #FF3737; /* original red color on active */
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
 }
+
+#buy-premium-btn {
+  background-color: transparent; 
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#premium-text {
+  font-weight: bold; 
+  color: #FFD700; 
+  font-size: large;
+  background-color: #333; 
+  padding: 5px 10px;
+  border-radius: 5px;
+}
