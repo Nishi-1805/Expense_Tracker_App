@@ -1,12 +1,23 @@
 const axios = require('axios');
-const Userfile = require('../models/Userfile');
+//const Userfile = require('../models/Userfile');
 const PrimaryProfile = require('../models/primaryprofile')
 const Transactions = require('../models/daily-expense');
+const Orders = require('../models/orders')
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 const moment = require('moment');
 const jwt = require('jsonwebtoken');
+const uuid = require('uuid');
 const { authenticate, generateAccessToken } = require('../middleware/auth');
+const Razorpay = require('razorpay');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: './util/.env' });
+console.log(process.env.RAZORPAY_KEY_ID, process.env.RAZORPAY_SECRET_KEY);
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET_KEY,
+});
 
 exports.getCurrencies = async (req, res) => {
   try {
@@ -73,9 +84,9 @@ exports.createUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const userfile = await Userfile.create({ googleDriveBackupId: null }); // assume no Google Drive backup ID for now
+   // const userfile = await Userfile.create({ googleDriveBackupId: null }); // assume no Google Drive backup ID for now
     const primaryProfile = await PrimaryProfile.create({
-      userId: userfile.id,
+     // userId: userfile.id,
       password: hashedPassword,
       name,
       email,
@@ -131,7 +142,7 @@ exports.addTransaction = async (req, res) => {
         text: transactionData.income.text,
         amount: parseFloat(transactionData.income.amount),
         description: transactionData.income.description,
-        userId: user.id,
+        profileId: user.id,
       });
     }
 
@@ -142,15 +153,15 @@ exports.addTransaction = async (req, res) => {
         text: transactionData.expense.text,
         amount: parseFloat(transactionData.expense.amount),
         description: transactionData.expense.description,
-        userId: user.id,
+        profileId: user.id,
       });
     }
 
     const totalIncome = await Transactions.sum('amount', {
-      where: { type: 'income', userId: user.id }
+      where: { type: 'income', profileId: user.id }
     }) || 0;
     const totalExpense = await Transactions.sum('amount', {
-      where: { type: 'expense', userId: user.id }
+      where: { type: 'expense', profileId: user.id }
     }) || 0;
 
     res.status(201).json({
@@ -170,9 +181,13 @@ exports.addTransaction = async (req, res) => {
 
 exports.getDailyExpenses = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const profileId = req.user.id;
     const transactions = await Transactions.findAll({
-      where: { userId },
+      where: {
+        profileId: {
+          [Op.eq]: profileId
+        }
+      },
       order: [['date', 'DESC']]
     });
 
@@ -215,5 +230,51 @@ exports.deleteTransaction = async (req, res) => {
   } catch (error) {
     console.error('Error deleting transaction:', error);
     res.status(500).json({ message: 'Error deleting transaction' });
+  }
+};
+
+exports.buyPremiumMembership = async (req, res) => {
+  try {
+    const options = {
+      amount: 100, // Amount in paise
+      currency: 'INR',
+      receipt: 'rcptid_11',
+    };
+
+    const order = await razorpay.orders.create(options);
+    res.json({ orderId: order.id });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to create order' });
+  }
+};
+
+exports.handlePaymentResponse = async (req, res) => {
+  try {
+    const paymentId = req.body.razorpay_payment_id;
+    const orderId = uuid.v4();
+
+    // Save payment details to database
+    const user = req.user;
+    user.isPremium = true;
+    await user.save();
+
+    await Orders.create({
+      profileId: user.id,
+      paymentId,
+      orderId,
+      status: 'paid',
+    });
+
+    // Set cookie indicating premium membership
+    res.cookie('isPremiumMember', 'true', {
+      secure: true,
+      path: '/daily',
+      maxAge: 31536000000,  // 1 year in milliseconds
+    });
+    res.json({ message: 'Premium membership purchased successfully!' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to process payment' });
   }
 };
