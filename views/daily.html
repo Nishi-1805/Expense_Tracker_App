@@ -14,6 +14,7 @@
     <div class="header-container">
       <h1>Day-to-Day Expenses</h1>
       <div class="top-right-icons">
+        <button id="buy-premium-btn"><i class="fas fa-gem"></i></button>
         <i class="fas fa-cloud" id="onedrive-icon"></i>
         <i class="fas fa-drive" id="google-drive-icon"></i>
         <i class="fas fa-search" id="search-icon"></i>
@@ -37,6 +38,7 @@
       </ul>
     </nav>
   </header>
+  <div id="premium-text" style="display: none;"></div>
   <main>
     <section class="daily-expense-container">
       <div class="date-bar">
@@ -83,6 +85,7 @@
       </form>
     </section>
   </main>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
     const monthlyNavItem = document.getElementById('monthly-expense');
 
@@ -157,108 +160,108 @@
     document.addEventListener('click', (event) => {
       if (!event.target.closest('#add-transaction-form, #add-transaction-btn')) {
         addTransactionForm.style.display = 'none';
-      } 
+      }
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const headers = {
-      Authorization: `Bearer ${token}`,
-    };
-    const dailyExpensesResponse = await fetch('/api/transactions', { headers });
-    const dailyExpensesData = await dailyExpensesResponse.json();
-    updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
-  } catch (error) {
-    console.error('Error fetching daily expenses:', error);
-  }
-});
+      try {
+        const token = localStorage.getItem('token');
+        const headers = {
+          Authorization: `Bearer ${token}`,
+        };
+        const dailyExpensesResponse = await fetch('/api/transactions', { headers });
+        const dailyExpensesData = await dailyExpensesResponse.json();
+        updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
+      } catch (error) {
+        console.error('Error fetching daily expenses:', error);
+      }
+    });
 
-function updateDailyExpensesUI(dailyExpensesData, selectedCurrency) {
-  if (!dailyExpensesData) {
-    console.error('Error: dailyExpensesData is null or undefined');
-    return;
-  }
+    function updateDailyExpensesUI(dailyExpensesData, selectedCurrency) {
+      if (!dailyExpensesData) {
+        console.error('Error: dailyExpensesData is null or undefined');
+        return;
+      }
 
-  console.log('updateDailyExpensesUI called');
-  console.log(dailyExpensesData);
-  console.log(selectedCurrency);
+      console.log('updateDailyExpensesUI called');
+      console.log(dailyExpensesData);
+      console.log(selectedCurrency);
 
-  const totalIncomeSpan = document.getElementById('total-income');
-  const totalExpenseSpan = document.getElementById('total-expense');
-  const incomeDetailsElement = document.getElementById('income-details');
-  const expenseDetailsElement = document.getElementById('expense-details');
+      const totalIncomeSpan = document.getElementById('total-income');
+      const totalExpenseSpan = document.getElementById('total-expense');
+      const incomeDetailsElement = document.getElementById('income-details');
+      const expenseDetailsElement = document.getElementById('expense-details');
 
-  let totalIncome = 0;
-  let totalExpense = 0;
+      let totalIncome = 0;
+      let totalExpense = 0;
 
-  if (dailyExpensesData.dailyExpenses) {
-    totalIncome = dailyExpensesData.dailyExpenses.income;
-    totalExpense = dailyExpensesData.dailyExpenses.expense;
-  } else {
-    totalIncome = dailyExpensesData.totalIncome;
-    totalExpense = dailyExpensesData.totalExpense;
-  }
+      if (dailyExpensesData.dailyExpenses) {
+        totalIncome = dailyExpensesData.dailyExpenses.income;
+        totalExpense = dailyExpensesData.dailyExpenses.expense;
+      } else {
+        totalIncome = dailyExpensesData.totalIncome;
+        totalExpense = dailyExpensesData.totalExpense;
+      }
 
-  incomeDetailsElement.innerHTML = ''; // Clear the income details element
-  expenseDetailsElement.innerHTML = ''; // Clear the expense details element
+      incomeDetailsElement.innerHTML = ''; // Clear the income details element
+      expenseDetailsElement.innerHTML = ''; // Clear the expense details element
 
-  if (dailyExpensesData.transactions) {
-    dailyExpensesData.transactions.forEach((transaction) => {
-      const transactionElement = document.createElement('div');
-      transactionElement.className = 'transaction-item';
-      transactionElement.innerHTML = `
+      if (dailyExpensesData.transactions) {
+        dailyExpensesData.transactions.forEach((transaction) => {
+          const transactionElement = document.createElement('div');
+          transactionElement.className = 'transaction-item';
+          transactionElement.innerHTML = `
         <p><strong>Date:</strong> ${transaction.date}</p>
         <p><strong>Text:</strong> ${transaction.text}</p>
         <p class="amount"><strong>Amount:</strong> ${transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00'} ${selectedCurrency}</p>
         <p><strong>Info:</strong> ${transaction.description}</p>
         <button class="delete-btn" data-transaction-id="${transaction.id}">Delete</button>
       `;
-      if (transaction.type === 'income') {
-        incomeDetailsElement.appendChild(transactionElement);
-      } else {
-        expenseDetailsElement.appendChild(transactionElement);
-      }
-    });
-  }
-
-  if (totalIncomeSpan && totalExpenseSpan) {
-    totalIncomeSpan.textContent = `${selectedCurrency} ${parseFloat(totalIncome).toFixed(2)}`;
-    totalExpenseSpan.textContent = `${selectedCurrency} ${parseFloat(totalExpense).toFixed(2)}`;
-  }
-
-  const deleteBtns = document.querySelectorAll('.delete-btn');
-  deleteBtns.forEach((btn) => {
-    btn.addEventListener('click', async (e) => {
-      const transactionId = e.target.dataset.transactionId;
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`/api/transactions/${transactionId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+          if (transaction.type === 'income') {
+            incomeDetailsElement.appendChild(transactionElement);
+          } else {
+            expenseDetailsElement.appendChild(transactionElement);
+          }
         });
-
-        if (response.ok) {
-          console.log('Transaction deleted successfully!');
-          // Fetch and update the UI after successful deletion
-          const dailyExpensesResponse = await fetch('/api/transactions', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          const dailyExpensesData = await dailyExpensesResponse.json();
-          updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
-        } else {
-          console.error('Error deleting transaction:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error deleting transaction:', error);
       }
-    });
-  });
-}
+
+      if (totalIncomeSpan && totalExpenseSpan) {
+        totalIncomeSpan.textContent = `${selectedCurrency} ${parseFloat(totalIncome).toFixed(2)}`;
+        totalExpenseSpan.textContent = `${selectedCurrency} ${parseFloat(totalExpense).toFixed(2)}`;
+      }
+
+      const deleteBtns = document.querySelectorAll('.delete-btn');
+      deleteBtns.forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          const transactionId = e.target.dataset.transactionId;
+          try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/transactions/${transactionId}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            });
+
+            if (response.ok) {
+              console.log('Transaction deleted successfully!');
+              // Fetch and update the UI after successful deletion
+              const dailyExpensesResponse = await fetch('/api/transactions', {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+              const dailyExpensesData = await dailyExpensesResponse.json();
+              updateDailyExpensesUI(dailyExpensesData, selectedCurrency);
+            } else {
+              console.error('Error deleting transaction:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Error deleting transaction:', error);
+          }
+        });
+      });
+    }
 
     const addTransactionForm = document.getElementById('add-transaction-form');
     const submitTransactionBtn = document.getElementById('submit-transaction-btn');
@@ -301,41 +304,112 @@ function updateDailyExpensesUI(dailyExpensesData, selectedCurrency) {
       }
 
       const transactionData = {
-      date: transactionDate,
-      income: incomeText ? { text: incomeText, amount: incomeAmount, description: incomeDescription } : null,
-      expense: expenseText ? { text: expenseText, amount: expenseAmount, description: expenseDescription } : null
-    };
+        date: transactionDate,
+        income: incomeText ? { text: incomeText, amount: incomeAmount, description: incomeDescription } : null,
+        expense: expenseText ? { text: expenseText, amount: expenseAmount, description: expenseDescription } : null
+      };
 
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(transactionData),
-      });
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/transactions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(transactionData),
+        });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Transaction added successfully!');
-        addTransactionForm.reset();
-        updateDailyExpensesUI(data, localStorage.getItem('selectedCurrency'));
-      } else {
-        console.error('Error adding transaction:', response.statusText);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Transaction added successfully!');
+          addTransactionForm.reset();
+          updateDailyExpensesUI(data, localStorage.getItem('selectedCurrency'));
+        } else {
+          console.error('Error adding transaction:', response.statusText);
+          const errorElement = document.getElementById('error-message');
+          errorElement.textContent = 'Error adding transaction: ' + response.statusText;
+          errorElement.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error adding transaction:', error);
         const errorElement = document.getElementById('error-message');
-        errorElement.textContent = 'Error adding transaction: ' + response.statusText;
+        errorElement.textContent = 'Error adding transaction: ' + error.message;
         errorElement.style.display = 'block';
       }
-    } catch (error) {
-      console.error('Error adding transaction:', error);
-      const errorElement = document.getElementById('error-message');
-      errorElement.textContent = 'Error adding transaction: ' + error.message;
-      errorElement.style.display = 'block';
+    });
+
+document.getElementById('buy-premium-btn').addEventListener('click', async () => {
+  try {
+    const token = localStorage.getItem('token'); // or wherever you store the token
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
-  });
-    </script>
+    const response = await fetch('/api/buy-premium', {
+      method: 'GET',
+      headers,
+    });
+
+    const orderId = await response.json();
+    const options = {
+      key: 'rzp_test_1l8ZR5jaNH5LNm', // Replace with your Razorpay key ID
+      amount: 10000, // Amount in paise
+      currency: 'INR',
+      name: 'Premium Membership',
+      description: 'Buy premium membership',
+      image: '/your-logo-url',
+      order_id: orderId,
+      handler: async (response) => {
+        // Send payment response to server
+        await fetch('/api/buy-premium', {
+          method: 'POST',
+          headers: { ...headers }, 
+          body: JSON.stringify(response),
+        });
+     // Update the UI to reflect the premium status
+     setPremiumStatus(true);
+      },
+    };
+
+    const razorpay = new Razorpay(options);
+    razorpay.open();
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+// Function to set premium status in the UI
+function setPremiumStatus(isPremium) {
+  const premiumButton = document.getElementById('buy-premium-btn');
+  const premiumText = document.getElementById('premium-text');
+
+  if (isPremium) {
+    premiumButton.style.display = 'none';
+    premiumText.style.display = 'block';
+    premiumText.innerHTML = 'Premium Member';
+  } else {
+    premiumButton.style.display = 'block';
+    premiumText.style.display = 'none';
+  }
+}
+
+// Check premium status on page load
+document.addEventListener('DOMContentLoaded', () => {
+  const isPremiumMember = getCookie('isPremiumMember') === 'true';
+  console.log('isPremiumMember cookie value:', isPremiumMember); 
+  setPremiumStatus(isPremiumMember);
+});
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null; 
+}
+  </script>
 </body>
 
 </html>
