@@ -1,21 +1,14 @@
 const Sequelize = require('sequelize');
 const db = require('../util/database');
-const Userfile = require('./Userfile');
 const bcrypt = require('bcrypt');
 const Transaction = require('./daily-expense');
+const Order = require('./orders');
 
 const PrimaryProfile = db.define('PrimaryProfile', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
     autoIncrement: true
-  },
-  userId: {
-    type: Sequelize.INTEGER,
-    references: {
-      model: Userfile,
-      key: 'id'
-    }
   },
   password: {
     type: Sequelize.STRING
@@ -49,5 +42,6 @@ PrimaryProfile.prototype.comparePassword = async function(password) {
     throw error;
   }
 };
+
 
 module.exports = PrimaryProfile;
