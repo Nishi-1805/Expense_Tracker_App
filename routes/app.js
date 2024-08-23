@@ -11,6 +11,8 @@ router.get('/new-user', controllers.getNewUser);
 
 router.get('/notes', controllers.getNotesPage);
 router.get('/daily', userauthentication.authenticate, controllers.getDailyExpensePage);
+router.get('/buy-premium', userauthentication.authenticate, controllers.buyPremiumMembership);
+router.post('/buy-premium', userauthentication.authenticate, controllers.handlePaymentResponse);
 router.get('/transactions', userauthentication.authenticate, controllers.getDailyExpenses);
 router.post('/transactions', userauthentication.authenticate, controllers.addTransaction);
 router.delete('/transactions/:transactionId', userauthentication.authenticate, controllers.deleteTransaction);
