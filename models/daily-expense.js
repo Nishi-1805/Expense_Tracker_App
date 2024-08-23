@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const db = require('../util/database');
-const User = require('./Userfile');
+const PrimaryProfile = require('./primaryprofile');
 
 const Transaction = db.define('Transaction', {
   date: {
@@ -18,12 +18,8 @@ const Transaction = db.define('Transaction', {
   description: {
     type: DataTypes.TEXT
   },
-  userId: {
+  profileId: {
     type: DataTypes.INTEGER,
-    references: {
-      model: User,
-      key: 'id'
-    }
   }
 });
 
