@@ -84,6 +84,10 @@
         <button id="submit-transaction-btn" type="submit">Add Transaction</button>
       </form>
     </section>
+    <button id="leaderboard-btn" style="display: none;">Leaderboard</button>
+    <section id="leaderboard-section">
+      <ul id="leaderboard-list"></ul>
+    </section>
   </main>
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
@@ -339,6 +343,53 @@
       }
     });
 
+  document.addEventListener('DOMContentLoaded', async () => {
+  const premiumStatusCookie = getCookie('premiumStatus');
+  if (premiumStatusCookie === 'true') {
+    setPremiumStatus(true);
+  } else {
+    setPremiumStatus(false);
+  }
+
+ // Update leaderboard button display property when premium status changes
+ document.addEventListener('premiumStatusChanged', (event) => {
+    const isPremium = event.detail.isPremium;
+    const leaderboardButton = document.getElementById('leaderboard-btn');
+    if (isPremium) {
+      leaderboardButton.style.display = 'block';
+    } else {
+      leaderboardButton.style.display = 'none';
+    }
+  });
+})
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null; 
+}
+
+// Function to set premium status in the UI
+function setPremiumStatus(isPremium) {
+  const premiumButton = document.getElementById('buy-premium-btn');
+  const premiumText = document.getElementById('premium-text');
+  const leaderboardButton = document.getElementById('leaderboard-btn');
+
+  if (isPremium) {
+    premiumButton.style.display = 'none';
+    premiumText.style.display = 'block';
+    premiumText.innerHTML = 'Premium Member';
+    leaderboardButton.style.display = 'block'; 
+  } else {
+    premiumButton.style.display = 'block';
+    premiumText.style.display = 'none';
+    leaderboardButton.style.display = 'none';
+    }
+}
+// Dispatch event when premium status changes
+document.dispatchEvent(new CustomEvent('premiumStatusChanged', { detail: { isPremium: true } }));
+
 document.getElementById('buy-premium-btn').addEventListener('click', async () => {
   try {
     const token = localStorage.getItem('token'); // or wherever you store the token
@@ -368,12 +419,20 @@ document.getElementById('buy-premium-btn').addEventListener('click', async () =>
           method: 'POST',
           headers: { ...headers }, 
           body: JSON.stringify(response),
+        })
+        .then((paymentResponse) => {
+          if (paymentResponse.ok) {
+            document.cookie = 'premiumStatus=true; max-age=31536000'; // Set premium status cookie for 1 year
+            setPremiumStatus(true);
+          } else {
+            console.error('Failed to process payment.');
+          }
+        })
+        .catch((error) => {
+          console.error('Error sending payment response:', error);
         });
-     // Update the UI to reflect the premium status
-     setPremiumStatus(true);
       },
     };
-
     const razorpay = new Razorpay(options);
     razorpay.open();
   } catch (error) {
@@ -381,34 +440,64 @@ document.getElementById('buy-premium-btn').addEventListener('click', async () =>
   }
 });
 
-// Function to set premium status in the UI
-function setPremiumStatus(isPremium) {
-  const premiumButton = document.getElementById('buy-premium-btn');
-  const premiumText = document.getElementById('premium-text');
-
-  if (isPremium) {
-    premiumButton.style.display = 'none';
-    premiumText.style.display = 'block';
-    premiumText.innerHTML = 'Premium Member';
-  } else {
-    premiumButton.style.display = 'block';
-    premiumText.style.display = 'none';
-  }
-}
-
 // Check premium status on page load
-document.addEventListener('DOMContentLoaded', () => {
-  const isPremiumMember = getCookie('isPremiumMember') === 'true';
-  console.log('isPremiumMember cookie value:', isPremiumMember); 
-  setPremiumStatus(isPremiumMember);
+document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token'); // Get stored token
+  if (token) {
+    try {
+      const response = await fetch('/api/check-premium', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+      console.log('checkPremiumStatus response:', data);
+      setPremiumStatus(data.isPremium); // Update UI based on premium status
+    } catch (error) {
+      console.error('Failed to fetch premium status:', error);
+      setPremiumStatus(false);
+    }
+  } else {
+    setPremiumStatus(false); // Default to non-premium if no token is found
+  }
 });
 
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-  return null; 
-}
+const leaderboardButton = document.getElementById('leaderboard-btn');
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const premiumStatus = getCookie('premiumStatus') === 'true';
+  if (premiumStatus) {
+    leaderboardButton.style.display = 'block';
+  } else {
+    leaderboardButton.style.display = 'none';
+  }
+});
+
+  leaderboardButton.addEventListener('click', async () => {
+  try {
+    const token = localStorage.getItem('token'); // Get the token from local storage
+    const response = await fetch('/api/leaderboard', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+    console.log(data);
+    // Update the leaderboard list
+    const leaderboardList = document.getElementById('leaderboard-list');
+    leaderboardList.innerHTML = ''; // Clear the list
+
+    data.transactions.forEach((transaction) => {
+      const listItem = document.createElement('li');
+      listItem.textContent = `${transaction.PrimaryProfile.name}: ${transaction.amount}: ${transaction.type}: ${transaction.text} `;
+      leaderboardList.appendChild(listItem);
+    });
+  } catch (error) {
+    console.error(error);
+  }
+});
   </script>
 </body>
 
