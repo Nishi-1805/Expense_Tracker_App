@@ -25,7 +25,8 @@ const authenticate = async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid token' });
     }
     req.user = primaryProfile;
-    req.session.isPremium = primaryProfile.isPremium; 
+    req.session.isPremium = primaryProfile.isPremium;
+    req.session.premiumStatus = primaryProfile.isPremium;
     next();
   } catch (error) {
     console.error('Error authenticating:', error);
