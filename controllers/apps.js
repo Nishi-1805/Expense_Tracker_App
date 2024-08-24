@@ -265,16 +265,65 @@ exports.handlePaymentResponse = async (req, res) => {
       orderId,
       status: 'paid',
     });
-
-    // Set cookie indicating premium membership
-    res.cookie('isPremiumMember', 'true', {
-      secure: true,
-      path: '/daily',
-      maxAge: 31536000000,  // 1 year in milliseconds
-    });
+    req.session.isPremium = true;
+    // Set cookie indicating premium membership 
+    res.cookie('premiumStatus', 'true', { maxAge: 31536000000 }); 
     res.json({ message: 'Premium membership purchased successfully!' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to process payment' });
+  }
+};
+
+exports.checkPremiumStatus = async (req, res) => {
+  try {
+    const user = req.user; // The user should already be set by the `authenticate` middleware
+    if (!user) {
+      throw new Error('Unauthorized');
+    }
+    const orders = await Orders.findAll({
+      where: {
+        profileId: user.id,
+        status: 'paid',
+      },
+    });
+    const isPremium = orders.length > 0; // Check if the user has any paid orders
+    res.json({ isPremium });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to check premium status' });
+  }
+};
+
+exports.getLeaderboard = async (req, res) => {
+  try {
+    const user = req.user; // The user should already be set by the `authenticate` middleware
+    if (!user) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+    const orders = await Orders.findAll({
+      where: {
+        profileId: user.id,
+        status: 'paid',
+      },
+    });
+    const isPremium = orders.length > 0; // Check if the user has any paid orders
+    if (!isPremium) {
+      return res.status(403).json({ message: 'Only premium users can access the leaderboard' });
+    }
+    const transactions = await Transactions.findAll({
+      include: [
+        {
+          model: PrimaryProfile,
+          attributes: ['name'],
+        },
+      ],
+      order: [['amount', 'DESC']], // Sort transactions by amount in descending order
+    });
+    transactions.sort((a, b) => b.amount - a.amount);
+    res.json({ transactions });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch leaderboard data' });
   }
 };
