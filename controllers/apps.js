@@ -132,46 +132,36 @@ exports.addTransaction = async (req, res) => {
     const transactionData = req.body;
     const formattedDate = moment(transactionData.date).format('YYYY-MM-DD');
 
-    let incomeTransaction = null;
-    let expenseTransaction = null;
+    let transactionType = '';
+    let amount = 0;
 
     if (transactionData.income) {
-      incomeTransaction = await Transactions.create({
-        date: formattedDate,
-        type: 'income',
-        text: transactionData.income.text,
-        amount: parseFloat(transactionData.income.amount),
-        description: transactionData.income.description,
-        profileId: user.id,
-      });
+      transactionType = 'income';
+      amount = parseFloat(transactionData.income.amount);
+    } else if (transactionData.expense) {
+      transactionType = 'expense';
+      amount = parseFloat(transactionData.expense.amount);
     }
 
-    if (transactionData.expense) {
-      expenseTransaction = await Transactions.create({
-        date: formattedDate,
-        type: 'expense',
-        text: transactionData.expense.text,
-        amount: parseFloat(transactionData.expense.amount),
-        description: transactionData.expense.description,
-        profileId: user.id,
-      });
+    const transaction = await Transactions.create({
+      date: formattedDate,
+      type: transactionType,
+      text: transactionData[transactionType].text,
+      amount: amount,
+      description: transactionData[transactionType].description,
+      profileId: user.id,
+    });
+
+    if (transactionType === 'income') {
+      user.totalIncome += amount;
+    } else if (transactionType === 'expense') {
+      user.totalExpense += amount;
     }
 
-    const totalIncome = await Transactions.sum('amount', {
-      where: { type: 'income', profileId: user.id }
-    }) || 0;
-    const totalExpense = await Transactions.sum('amount', {
-      where: { type: 'expense', profileId: user.id }
-    }) || 0;
+    await user.save();
 
     res.status(201).json({
       message: 'Transaction added successfully',
-      data: {
-        income: incomeTransaction,
-        expense: expenseTransaction,
-      },
-      totalIncome,
-      totalExpense
     });
   } catch (error) {
     console.error('Error adding transaction:', error);
@@ -218,15 +208,31 @@ exports.deleteTransaction = async (req, res) => {
   try {
     const transactionId = req.params.transactionId;
     const userId = req.user.id; // Ensure user is properly authenticated
-    const deletionResult = await Transactions.destroy({
-      where: { id: transactionId, userId }
+
+    const transaction = await Transactions.findOne({
+      where: { id: transactionId, profileId: userId }
     });
 
-    if (deletionResult) {
-      res.status(200).json({ message: 'Transaction deleted successfully!' });
-    } else {
+    if (!transaction) {
       res.status(404).json({ message: 'Transaction not found or not authorized to delete' });
+      return;
     }
+
+    const amount = transaction.amount;
+    const type = transaction.type;
+
+    await transaction.destroy();
+
+    const user = await PrimaryProfile.findByPk(userId);
+    if (type === 'income') {
+      user.totalIncome -= amount;
+    } else if (type === 'expense') {
+      user.totalExpense -= amount;
+    }
+
+    await user.save();
+
+    res.status(200).json({ message: 'Transaction deleted successfully!' });
   } catch (error) {
     console.error('Error deleting transaction:', error);
     res.status(500).json({ message: 'Error deleting transaction' });
