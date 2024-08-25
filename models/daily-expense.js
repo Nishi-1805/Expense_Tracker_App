@@ -1,8 +1,8 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const db = require('../util/database');
+const sequelize = require('../util/database');
 const PrimaryProfile = require('./primaryprofile');
 
-const Transaction = db.define('Transaction', {
+const Transaction = sequelize.define('Transaction', {
   date: {
     type: DataTypes.DATEONLY // add a date column
   },
@@ -23,5 +23,19 @@ const Transaction = db.define('Transaction', {
   }
 });
 
+Transaction.afterCreate(async (transaction) => {
+  try {
+    const primaryProfile = await PrimaryProfile.findByPk(transaction.profileId);
+    if (primaryProfile) {
+      const totalExpense = await Transaction.sum('amount', {
+        where: { profileId: transaction.profileId }
+      });
+      primaryProfile.totalExpense = totalExpense; // update totalExpense with the sum
+      await primaryProfile.save();
+    }
+  } catch (error) {
+    console.error('Error updating totalExpense:', error);
+  }
+});
 
 module.exports = Transaction;
