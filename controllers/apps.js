@@ -297,16 +297,9 @@ exports.checkPremiumStatus = async (req, res) => {
 
 exports.getLeaderboard = async (req, res) => {
   try {
-    const leaderboard = await Transactions.findAll({
-      attributes: ['profileId', 'type', [sequelize.fn('sum', sequelize.col('amount')), 'total_cost']],
-      include: [
-        {
-          model: PrimaryProfile,
-          attributes: ['name'],
-        },
-      ],
-      group: ['profileId', 'type'], // Add type to the GROUP BY clause
-      order: [['total_cost', 'DESC']],
+    const leaderboard = await PrimaryProfile.findAll({
+      attributes: ['id', 'name', 'email', 'totalExpense'],
+      order: [['totalExpense', 'DESC']],
     });
 
     res.status(200).json(leaderboard);
