@@ -1,5 +1,5 @@
 const axios = require('axios');
-//const Userfile = require('../models/Userfile');
+const sequelize = require('../util/database');
 const PrimaryProfile = require('../models/primaryprofile')
 const Transactions = require('../models/daily-expense');
 const Orders = require('../models/orders')
@@ -297,31 +297,19 @@ exports.checkPremiumStatus = async (req, res) => {
 
 exports.getLeaderboard = async (req, res) => {
   try {
-    const user = req.user; // The user should already be set by the `authenticate` middleware
-    if (!user) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    const orders = await Orders.findAll({
-      where: {
-        profileId: user.id,
-        status: 'paid',
-      },
-    });
-    const isPremium = orders.length > 0; // Check if the user has any paid orders
-    if (!isPremium) {
-      return res.status(403).json({ message: 'Only premium users can access the leaderboard' });
-    }
-    const transactions = await Transactions.findAll({
+    const leaderboard = await Transactions.findAll({
+      attributes: ['profileId', 'type', [sequelize.fn('sum', sequelize.col('amount')), 'total_cost']],
       include: [
         {
           model: PrimaryProfile,
           attributes: ['name'],
         },
       ],
-      order: [['amount', 'DESC']], // Sort transactions by amount in descending order
+      group: ['profileId', 'type'], // Add type to the GROUP BY clause
+      order: [['total_cost', 'DESC']],
     });
-    transactions.sort((a, b) => b.amount - a.amount);
-    res.json({ transactions });
+
+    res.status(200).json(leaderboard);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to fetch leaderboard data' });
