@@ -32,7 +32,10 @@ const PrimaryProfile = sequelize.define('PrimaryProfile', {
   totalExpense: {
     type: Sequelize.DECIMAL(10, 2),
     defaultValue: 0
-  }
+  },
+  resetPasswordToken: {
+    type: Sequelize.STRING,
+  },
 });
 
 PrimaryProfile.prototype.comparePassword = async function(password) {
