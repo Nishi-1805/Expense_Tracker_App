@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password</title>
+</head>
+<body>
+  <h1>Reset Password</h1>
+  <form id="reset-pw-form">
+    <label for="password">New Password:</label>
+    <input type="password" id="password" name="password" required>
+    <br><br>
+    <label for="confirmPassword">Confirm New Password:</label>
+    <input type="password" id="confirmPassword" name="confirmPassword" required>
+    <br><br>
+    <button type="submit">Reset Password</button>
+  </form>
+  <script>
+    const form = document.getElementById('reset-pw-form');
+    let passwordReset = false;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (passwordReset) {
+      alert('Password has already been reset. Please login with your new password.');
+      return;
+    }
+      const forgotPasswordRequestId = window.location.pathname.split('/')[2];
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/reset-password/${forgotPasswordRequestId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, confirmPassword }),
+        });
+
+        if (response.ok) {
+          alert('Password reset successfully');
+          passwordReset = true; 
+        } else {
+          alert('Error resetting password');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error resetting password');
+      }
+    });
+  </script>
+
+</body>
+</html>
