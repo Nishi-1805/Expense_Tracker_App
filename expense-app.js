@@ -6,6 +6,7 @@ const sequelize = require('./util/database');
 const PrimaryProfile = require('./models/primaryprofile');
 const Transaction = require('./models/daily-expense');
 const Order = require('./models/orders');
+const ForgotPasswordRequest = require('./models/forgot_pw_request');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 
@@ -48,6 +49,12 @@ app.get('/yearly', (req, res) => {
   res.sendFile(path.join(__dirname, '/views/yearly.html'));
 });
 
+app.get('/reset-password/:forgotPasswordRequestId', (req, res) => {
+  const forgotPasswordRequestId = req.params.forgotPasswordRequestId;
+
+  res.sendFile(path.join(__dirname, '/views/reset_pw.html'));
+});
+
 app.use('/api', routes);
 
 PrimaryProfile.hasMany(Transaction, {
@@ -67,6 +74,16 @@ PrimaryProfile.hasMany(Order, {
 
 Order.belongsTo(PrimaryProfile, {
   foreignKey: 'profileId',
+  onDelete: 'CASCADE'
+});
+
+PrimaryProfile.hasMany(ForgotPasswordRequest, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE'
+});
+
+ForgotPasswordRequest.belongsTo(PrimaryProfile, {
+  foreignKey: 'userId',
   onDelete: 'CASCADE'
 });
 
