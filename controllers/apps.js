@@ -3,6 +3,7 @@ const sequelize = require('../util/database');
 const PrimaryProfile = require('../models/primaryprofile')
 const Transactions = require('../models/daily-expense');
 const Orders = require('../models/orders')
+const ForgotPasswordRequest = require('../models/forgot_pw_request');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 const moment = require('moment');
@@ -318,7 +319,7 @@ exports.getLeaderboard = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body; // Extract email from the request body
+    const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
@@ -329,12 +330,58 @@ exports.forgotPassword = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const name = user.name;
-    sendForgotPasswordEmail(email, name); // Ensure this function completes before proceeding
+    const forgotPasswordRequest = await ForgotPasswordRequest.create({
+      userId: user.id
+    });
+
+    sendForgotPasswordEmail(email, user.name, forgotPasswordRequest.id);
 
     res.status(200).json({ message: 'Password reset link sent to your email' });
   } catch (error) {
     console.error('Error sending password reset link:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.getResetPasswordPage = async (req, res) => {
+  try {
+    const forgotPasswordRequestId = req.params.forgotPasswordRequestId;
+    const forgotPasswordRequest = await ForgotPasswordRequest.findByPk(forgotPasswordRequestId);
+
+    if (!forgotPasswordRequest || !forgotPasswordRequest.isActive) {
+      return res.status(404).json({ message: 'Invalid or expired password reset link' });
+    }
+    res.status(200).sendFile(path.join(__dirname, '../views/reset-password.html'));
+  } catch (error) {
+    console.error('Error fetching reset password page:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const forgotPasswordRequestId = req.params.forgotPasswordRequestId;
+    const forgotPasswordRequest = await ForgotPasswordRequest.findByPk(forgotPasswordRequestId);
+
+    if (!forgotPasswordRequest || !forgotPasswordRequest.isActive) {
+      return res.status(404).json({ message: 'Invalid or expired password reset link' });
+    }
+
+    const { password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+    
+    const user = await PrimaryProfile.findByPk(forgotPasswordRequest.userId);
+    user.password = await bcrypt.hash(password, 10);
+    await user.save();
+
+    await forgotPasswordRequest.update({ isActive: false });
+
+    res.status(200).json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
