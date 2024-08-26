@@ -7,6 +7,7 @@ router.get('/', controllers.getAppPage);
 router.get('/currencies', controllers.getCurrencies);
 router.get('/login', controllers.getloginPage);
 router.post('/login',controllers.login);
+router.post('/password/forgotpassword', controllers.forgotPassword);
 router.get('/new-user', controllers.getNewUser);
 
 router.get('/notes', controllers.getNotesPage);
