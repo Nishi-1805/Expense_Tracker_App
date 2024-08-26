@@ -11,6 +11,7 @@ const uuid = require('uuid');
 const { authenticate, generateAccessToken } = require('../middleware/auth');
 const Razorpay = require('razorpay');
 const dotenv = require('dotenv');
+const { sendForgotPasswordEmail } = require('./mail');
 
 dotenv.config({ path: './util/.env' });
 console.log(process.env.RAZORPAY_KEY_ID, process.env.RAZORPAY_SECRET_KEY);
@@ -312,5 +313,28 @@ exports.getLeaderboard = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to fetch leaderboard data' });
+  }
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body; // Extract email from the request body
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await PrimaryProfile.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const name = user.name;
+    sendForgotPasswordEmail(email, name); // Ensure this function completes before proceeding
+
+    res.status(200).json({ message: 'Password reset link sent to your email' });
+  } catch (error) {
+    console.error('Error sending password reset link:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
