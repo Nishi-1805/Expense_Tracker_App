@@ -47,9 +47,6 @@
       </div>
     </section>
     <section class="notes-content">
-      <ul id="notes-list">
-        <!-- List of notes will be displayed here -->
-      </ul>
       <button id="add-note-btn">Add Note</button>
       <form id="add-note-form" style="display: none;">
         <input type="text" id="note-input" placeholder="Add a new note">
@@ -58,6 +55,10 @@
         <button id="submit-note-btn" type="submit">Add Note</button>
       </form>
     </section>
+    <div id="pagination-links"></div>
+<a id="previous-link"></a>
+<a id="next-link"></a>
+<div id="note-list"></div>
   </main>
   <script>
     const notesNavItem = document.getElementById('notes-nav-item');
@@ -173,9 +174,24 @@
     }
   });
 
-  async function getNotes() {
+  let gettingNotes = false;
+  async function getNotes(page = 1) {
+  if (gettingNotes) return; // Prevent recursive calls
+  gettingNotes = true;
+
+  console.log(`Getting notes for page ${page}`);
+
+  const notesList = document.getElementById('note-list');
+  const paginationLinks = document.getElementById('pagination-links');
+  const previousLink = document.getElementById('previous-link');
+  const nextLink = document.getElementById('next-link');
+
+  // Clear the notes list and pagination links
+  notesList.innerHTML = '';
+  paginationLinks.innerHTML = '';
+
   try {
-    const response = await fetch('/api/notes', {
+    const response = await fetch(`/api/notes?page=${page}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -187,21 +203,76 @@
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const notes = await response.json();
+    const { notes, totalPages } = await response.json();
+
+    // Add notes to the list
     notes.forEach((note) => {
-      addNoteToList(note);
+      addNoteToList(note, notesList);
     });
+
+    // Update pagination links
+    for (let i = 1; i <= totalPages; i++) {
+      const link = document.createElement('a');
+      link.href = `#`;
+      link.textContent = i;
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        getNotes(i);
+      });
+      paginationLinks.appendChild(link);
+      if (i === page) {
+        link.className = 'active';
+      }
+    }
+
+    // Update previous and next links
+    previousLink.style.display = page > 1 ? 'inline' : 'none';
+    nextLink.style.display = page < totalPages ? 'inline' : 'none';
+
+    if (page > 1) {
+      previousLink.href = '#';
+      previousLink.textContent = 'Previous';
+      previousLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        getNotes(page - 1);
+      });
+    }
+
+    if (page < totalPages) {
+      nextLink.href = '#';
+      nextLink.textContent = 'Next';
+      nextLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        getNotes(page + 1);
+      });
+    }
+
+    gettingNotes = false;
   } catch (error) {
     console.error('Error getting notes:', error);
+    gettingNotes = false;
   }
 }
 
-function addNoteToList(note) {
-  const noteListItem = document.createElement('li');
-  noteListItem.innerHTML = `<span>${note.date}</span> - <span>${note.title}</span> - <span>${note.text}</span>`;
-  notesList.appendChild(noteListItem);
+function addNoteToList(note, noteList) {
+  console.log(`Adding note ${note.text} to the list`);
+  const noteElement = document.createElement('div');
+  noteElement.className = 'note-item';
+
+  // Create a container for the note details
+  const noteDetailsContainer = document.createElement('div');
+  noteDetailsContainer.className = 'note-details';
+
+  // Add the date, title, and text to the note details container
+  noteDetailsContainer.textContent = `${note.date} | ${note.title} | ${note.text}`;
+
+  noteElement.appendChild(noteDetailsContainer);
+  noteList.appendChild(noteElement);
 }
-  document.addEventListener('DOMContentLoaded', getNotes);
+
+document.addEventListener('DOMContentLoaded', () => {
+  getNotes();
+});
 
   </script>
 </body>
