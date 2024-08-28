@@ -14,7 +14,7 @@ router.get('/new-user', controllers.getNewUser);
 
 router.get('/note', controllers.getNotesPage);
 router.post('/notes', userauthentication.authenticate, controllers.createNote);
-router.get('/notes', userauthentication.authenticate, controllers.getNotes);
+router.get('/notes/:page?', userauthentication.authenticate, controllers.getNotes);
 router.get('/daily', userauthentication.authenticate, controllers.getDailyExpensePage);
 router.get('/buy-premium', userauthentication.authenticate, controllers.buyPremiumMembership);
 router.get('/check-premium', userauthentication.authenticate, controllers.checkPremiumStatus);
