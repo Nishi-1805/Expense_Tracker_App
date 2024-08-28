@@ -28,7 +28,7 @@
         </div>
         <nav>
             <ul>
-                <li><a href="/notes"><i class="fas fa-pencil" style="font-size: 24px;"></i></a></li>
+                <li><a href="/note"><i class="fas fa-pencil" style="font-size: 24px;"></i></a></li>
                 <li><a href="/daily"><i class="fas fa-money-bill-wave"
                             style="font-size: 24px;"></i><strong>Daily</strong></a></li>
                 <li><a href="/monthly" class="active"><i class="fas fa-chart-bar"
@@ -57,23 +57,40 @@
                         <p id="total-expense">$0.00</p>
                     </div>
                     <div class="summary-item">
-                        <p>Carry Forward Amount</p>
-                        <p id="carry-forward-amount">$0.00</p>
-                    </div>
-                    <div class="summary-item">
                         <p>Balance Left</p>
                         <p id="balance-left">$0.00</p>
                     </div>
+                    <div class="summary-item">
+                        <p>Description</p>
+                        <p id="description-detail"></p>
+                    </div>
                 </div>
             </section>
-            <button id="pdf-btn"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            <button id="add-expense-btn"><i class="fa-solid fa-plus"></i></button>
+            <button id="pdf-btn"><i class="fa-solid fa-file-arrow-down"></i> Download</button>
         </section>
+        <div id="add-expense-form" style="display: none;">
+            <form>
+                <label for="income">Total Income:</label>
+                <input type="number" id="income" name="income"><br><br>
+                <label for="expense">Total Expense:</label>
+                <input type="number" id="expense" name="expense"><br><br>
+                <label for="balance">Balance Left:</label>
+                <input type="number" id="balance" name="balance"><br><br>
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" placeholder="Description"><br><br>
+                <button id="submit-btn">Add Expense</button>
+            </form>
+        </div>
+        <div id="file-list-container" style="margin-top: 20px;"></div>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
     <script>
         const searchIcon = document.getElementById('search-icon');
         const searchInput = document.getElementById('search-input');
         const moreOptionsIcon = document.getElementById('more-options-icon');
         const moreOptionsList = document.getElementById('more-options-list');
+        let token;
 
         searchIcon.addEventListener('click', () => {
             searchInput.style.display = 'block';
@@ -111,7 +128,172 @@
             const year = currentMonth.getFullYear();
             currentMonthSpan.textContent = `${month} ${year}`;
         }
-    </script>
+
+       document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+    };
+    const response = await fetch('/api/check-premium', { method: 'GET', headers });
+    const isPremium = await response.json();
+    const addExpenseButton = document.getElementById('add-expense-btn');
+    const pdfButton = document.getElementById('pdf-btn');
+    if (addExpenseButton && pdfButton) {
+      if (isPremium.isPremium) {
+        addExpenseButton.style.display = 'block';
+        pdfButton.style.display = 'block';
+      } else {
+        addExpenseButton.style.display = 'none';
+        pdfButton.style.display = 'none'; 
+      }
+    }
+  } else {
+    const addExpenseButton = document.getElementById('add-expense-btn');
+    const pdfButton = document.getElementById('pdf-btn');
+    if (addExpenseButton && pdfButton) {
+      addExpenseButton.style.display = 'none';
+      pdfButton.style.display = 'none'; // Hide the Download PDF button for non-logged-in users
+    }
+  }
+});
+
+document.getElementById('add-expense-btn').addEventListener('click', () => {
+    document.getElementById('add-expense-form').style.display = 'block';
+    document.addEventListener('click', handleOutsideClick);
+});
+
+function handleOutsideClick(event) {
+    const form = document.getElementById('add-expense-form');
+    if (!form.contains(event.target) && event.target !== document.getElementById('add-expense-btn')) {
+        form.style.display = 'none';
+        document.removeEventListener('click', handleOutsideClick);
+    }
+}
+document.getElementById('submit-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const incomeInput = document.getElementById('income');
+    const expenseInput = document.getElementById('expense');
+    const balanceInput = document.getElementById('balance');
+    const descriptionInput = document.getElementById('description');
+
+    const expenseData = {
+      income: incomeInput.value,
+      expense: expenseInput.value,
+      balance: balanceInput.value,
+      description: descriptionInput.value,
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
+
+      const response = await fetch('/api/monthly', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(expenseData),
+      });
+
+      if (response.ok) {
+        const monthlyExpense = await response.json();
+        console.log(monthlyExpense);
+        document.getElementById('add-expense-form').style.display = 'none';
+      } else {
+        console.error('Error creating monthly expense:', response.status);
+      }
+    } catch (error) {
+      console.error('Error creating monthly expense:', error);
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+    };
+    const monthlySummaryResponse = await fetch('/api/monthly-summary', { method: 'GET', headers });
+    const monthlySummary = await monthlySummaryResponse.json();
+
+    // Update the HTML elements with the retrieved data
+    document.getElementById('total-income').textContent = `${monthlySummary.income}`;
+    document.getElementById('total-expense').textContent = `${monthlySummary.expense}`;
+    document.getElementById('balance-left').textContent = `${monthlySummary.balance}`;
+    document.getElementById('description-detail').textContent = monthlySummary.description;
+  }
+});
+
+// Add this function to store the downloaded file in localStorage
+function storeDownloadedFile(fileURL) {
+  const storedFiles = localStorage.getItem('downloadedFiles');
+  let filesArray = [];
+  if (storedFiles) {
+    filesArray = JSON.parse(storedFiles);
+  }
+  filesArray.push(fileURL);
+  localStorage.setItem('downloadedFiles', JSON.stringify(filesArray));
+}
+
+const pdfBtn = document.getElementById('pdf-btn');
+pdfBtn.addEventListener('click', download);
+function download() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No token found');
+      return;
+    }
+
+    axios({
+      method: 'get',
+      url: 'http://localhost:3000/api/download',
+    //  responseType: 'blob',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) => {
+    const fileURL = response.data.fileURL; // Retrieve the fileURL from the API response
+    axios({
+      method: 'get',
+      url: fileURL,
+      responseType: 'blob',
+    })
+    .then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'all_expenses.txt');
+      document.body.appendChild(link);
+      link.click();
+      storeDownloadedFile(fileURL);
+    })
+    .catch((err) => {
+      console.error('Error downloading file:', err);
+    });
+  })
+  .catch((err) => {
+    console.error('Error retrieving file URL:', err);
+  });
+}
+
+// Add this code to display the list of downloaded files on the dashboard
+document.addEventListener('DOMContentLoaded', async () => {
+  const storedFiles = localStorage.getItem('downloadedFiles');
+  if (storedFiles) {
+    const filesArray = JSON.parse(storedFiles);
+    const fileListContainer = document.getElementById('file-list-container');
+    filesArray.forEach((fileURL) => {
+      const fileListItem = document.createElement('li');
+      fileListItem.textContent = fileURL.split('/').pop(); // Display the file name
+      fileListContainer.appendChild(fileListItem);
+    });
+  }
+});
+      </script>
 </body>
 
 </html>
