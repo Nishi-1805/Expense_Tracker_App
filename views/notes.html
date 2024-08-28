@@ -22,8 +22,13 @@
         <ul id="more-options-list">
           <li><a href="#">Charts</a></li>
           <li><a href="#">Need Help</a></li>
-          <li><a href="#">Settings</a></li>
+          <li><a href="#" id="settings-link">Settings</a></li>
         </ul>
+        <div id="settings-modal" style="display: none;">
+          <label for="expenses-per-page">Rows per page:</label>
+          <input type="number" id="expenses-per-page" value="10" min="5" max="40">
+          <button id="save-settings-btn">Save</button>
+        </div>
       </div>
     </div>
     <nav>
@@ -80,6 +85,32 @@
 
     searchIcon.addEventListener('click', () => {
       searchInput.style.display = 'block';
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+  const settingsLink = document.getElementById('settings-link');
+  const settingsModal = document.getElementById('settings-modal');
+  const expensesPerPageInput = document.getElementById('expenses-per-page');
+  const saveSettingsBtn = document.getElementById('save-settings-btn');
+
+  settingsLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    settingsModal.style.display = 'block';
+  });
+
+saveSettingsBtn.addEventListener('click', () => {
+  const expensesPerPage = expensesPerPageInput.valueAsNumber;
+  localStorage.setItem('expensesPerPage', expensesPerPage);
+  settingsModal.style.display = 'none';
+  
+});
+  
+
+// Load the user's preferred expenses per page from local storage
+//const storedExpensesPerPage = localStorage.getItem('expensesPerPage');
+//if (storedExpensesPerPage) {
+//  expensesPerPageInput.value = storedExpensesPerPage;
+//}
     });
 
     const prevMonthBtn = document.getElementById('prev-month-btn');
@@ -190,8 +221,9 @@
   notesList.innerHTML = '';
   paginationLinks.innerHTML = '';
 
+  const expensesPerPage = parseInt(localStorage.getItem('expensesPerPage'), 10) || 10;
   try {
-    const response = await fetch(`/api/notes?page=${page}`, {
+    const response = await fetch(`/api/notes?page=${page}&limit=${expensesPerPage}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
