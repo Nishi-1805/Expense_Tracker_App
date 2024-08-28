@@ -1,19 +1,33 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 const routes = require('./routes/app');
 const sequelize = require('./util/database');
 const PrimaryProfile = require('./models/primaryprofile');
 const Transaction = require('./models/daily-expense');
 const Order = require('./models/orders');
 const ForgotPasswordRequest = require('./models/forgot_pw_request');
+const Note = require('./models/Note');
+const Monthly = require('./models/monthly');
+const Yearly = require('./models/year');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 
 app.use(cookieParser());
 app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(cors()); 
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 app.use(session({
   secret: 'IKTsaDhkXRzHrB40nvYOrQ88',
@@ -33,7 +47,7 @@ app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '/views/login.html'));
 });
 
-app.get('/notes', (req, res) => {
+app.get('/note', (req, res) => {
   res.sendFile(path.join(__dirname, '/views/notes.html'));
 });
 
@@ -84,6 +98,36 @@ PrimaryProfile.hasMany(ForgotPasswordRequest, {
 
 ForgotPasswordRequest.belongsTo(PrimaryProfile, {
   foreignKey: 'userId',
+  onDelete: 'CASCADE'
+});
+
+PrimaryProfile.hasMany(Note, {
+  foreignKey: 'profileId',
+  onDelete: 'CASCADE'
+});
+
+Note.belongsTo(PrimaryProfile, {
+  foreignKey: 'profileId',
+  onDelete: 'CASCADE'
+});
+
+PrimaryProfile.hasMany(Monthly, {
+  foreignKey: 'profileId',
+  onDelete: 'CASCADE'
+});
+
+Monthly.belongsTo(PrimaryProfile, {
+  foreignKey: 'profileId',
+  onDelete: 'CASCADE'
+});
+
+PrimaryProfile.hasMany(Yearly, {
+  foreignKey: 'profileId',
+  onDelete: 'CASCADE'
+});
+
+Yearly.belongsTo(PrimaryProfile, {
+  foreignKey: 'profileId',
   onDelete: 'CASCADE'
 });
 
