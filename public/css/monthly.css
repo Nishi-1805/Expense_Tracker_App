@@ -104,12 +104,48 @@ body {
 
   .monthly-expense-container {
     max-width: 800px;
+    min-height: 410px;
     margin: 40px auto;
     padding: 20px;
     background-color: #f7f7f7;
     border: 1px solid #ddd;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: relative;
   }
+
+  
+  #add-expense-btn {
+    position: absolute;
+    left: 30px; 
+    bottom: 50px; 
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  #add-expense-btn:hover {
+    background-color: #3e8e41;
+  }
+  
+  #pdf-btn {
+    position: absolute;
+    right: 30px; 
+    bottom: 50px; 
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+#pdf-btn:hover {
+  background-color: #3e8e41;
+}
+
   
   .month-bar {
     display: flex;
@@ -159,17 +195,37 @@ body {
     font-size: 16px;
     margin: 0;
   }
-  
-  #pdf-btn {
-    background-color: #4CAF50;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-top: 20px;
-  }
-  
-  #pdf-btn:hover {
-    background-color: #3e8e41;
-  }
+
+  #add-expense-form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    display: none;
+}
+#submit-btn{
+  background-color: #4CAF50; 
+  color: #fff; 
+  padding: 10px 20px; 
+  border: none; 
+  cursor: pointer;
+}
+
+#file-list-container {
+  margin-top: 20px;
+  padding: 20px;
+}
+
+#file-list-container li {
+  list-style: none;
+  margin-bottom: 10px;
+  color: #fff; 
+  font-size: 16px;
+
+}
+
