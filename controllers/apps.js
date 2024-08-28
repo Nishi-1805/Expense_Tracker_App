@@ -176,7 +176,7 @@ exports.getNotes = async (req, res) => {
     const userId = req.user.id;
     const primaryProfile = await PrimaryProfile.findOne({ where: { id: userId } });
     const page = parseInt(req.query.page) || 1;
-    const limit = 5; // number of notes per page
+    const limit = parseInt(req.query.limit) || 5;// number of notes per page
     const offset = (page - 1) * limit;
 
     const notes = await Note.findAll({
