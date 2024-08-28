@@ -12,7 +12,9 @@ router.get('/reset-password/:forgotPasswordRequestId', controllers.getResetPassw
 router.post('/reset-password/:forgotPasswordRequestId', controllers.resetPassword);
 router.get('/new-user', controllers.getNewUser);
 
-router.get('/notes', controllers.getNotesPage);
+router.get('/note', controllers.getNotesPage);
+router.post('/notes', userauthentication.authenticate, controllers.createNote);
+router.get('/notes', userauthentication.authenticate, controllers.getNotes);
 router.get('/daily', userauthentication.authenticate, controllers.getDailyExpensePage);
 router.get('/buy-premium', userauthentication.authenticate, controllers.buyPremiumMembership);
 router.get('/check-premium', userauthentication.authenticate, controllers.checkPremiumStatus);
@@ -21,8 +23,13 @@ router.get('/leaderboard', userauthentication.authenticate, controllers.getLeade
 router.get('/transactions', userauthentication.authenticate, controllers.getDailyExpenses);
 router.post('/transactions', userauthentication.authenticate, controllers.addTransaction);
 router.delete('/transactions/:transactionId', userauthentication.authenticate, controllers.deleteTransaction);
-router.get('/monthly', controllers.getMonthlyExpensePage);
-router.get('/yearly', controllers.getYearlyExpensePage);
+router.get('/monthly',userauthentication.authenticate, controllers.getMonthlyExpensePage);
+router.post('/monthly', userauthentication.authenticate, controllers.createMonthlyExpense);
+router.get('/monthly-summary', userauthentication.authenticate, controllers.getMonthlyExpenses);
+router.get('/download', userauthentication.authenticate, controllers.downloadallexpense);
+router.get('/yearly',userauthentication.authenticate, controllers.getYearlyExpensePage);
+router.post('/yearly', userauthentication.authenticate, controllers.createYearlyExpense);
+router.get('/yearly-summary', userauthentication.authenticate, controllers.getYearlyExpenses);
 router.post('/users', controllers.createUser);
 
 module.exports = router;
