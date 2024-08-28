@@ -28,7 +28,7 @@
         </div>
         <nav>
             <ul>
-                <li><a href="/notes"><i class="fas fa-pencil" style="font-size: 24px;"></i></a></li>
+                <li><a href="/note"><i class="fas fa-pencil" style="font-size: 24px;"></i></a></li>
                 <li><a href="/daily"><i class="fas fa-money-bill-wave"
                             style="font-size: 24px;"></i><strong>Daily</strong></a></li>
                 <li><a href="/monthly"><i class="fas fa-chart-bar"
@@ -57,17 +57,30 @@
                         <p id="total-expense">$0.00</p>
                     </div>
                     <div class="summary-item">
-                        <p>Carry Forward Amount</p>
-                        <p id="carry-forward-amount">$0.00</p>
-                    </div>
-                    <div class="summary-item">
                         <p>Balance Left</p>
                         <p id="balance-left">$0.00</p>
                     </div>
+                    <div class="summary-item">
+                        <p>Description</p>
+                        <p id="description-detail"></p>
+                    </div>
                 </div>
             </section>
-            <button id="pdf-btn"><i class="fas fa-file-pdf"></i> Download PDF</button>
+            <button id="add-expense-btn" style="display: none;">Add Expense</button>
         </section>
+        <div id="add-expense-form" style="display: none;">
+            <form>
+                <label for="income">Total Income:</label>
+                <input type="number" id="income" name="income"><br><br>
+                <label for="expense">Total Expense:</label>
+                <input type="number" id="expense" name="expense"><br><br>
+                <label for="balance">Balance Left:</label>
+                <input type="number" id="balance" name="balance"><br><br>
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description" placeholder="Description"><br><br>
+                <button id="submit-btn">Add Expense</button>
+            </form>
+        </div>
     </main>
     <script>
         const searchIcon = document.getElementById('search-icon');
@@ -107,6 +120,97 @@
         function updateYearDisplay() {
             currentYearSpan.textContent = currentYear.toString();
         }
+        document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+    };
+    const response = await fetch('/api/check-premium', { method: 'GET', headers });
+    const isPremium = await response.json();
+    const addExpenseButton = document.getElementById('add-expense-btn');
+    if (addExpenseButton) {
+      if (isPremium.isPremium) {
+        addExpenseButton.style.display = 'block';
+      } else {
+        addExpenseButton.style.display = 'none';
+      }
+    }
+  } else {
+    const addExpenseButton = document.getElementById('add-expense-btn');
+    if (addExpenseButton) {
+      addExpenseButton.style.display = 'none';
+    }
+  }
+});
+document.getElementById('add-expense-btn').addEventListener('click', () => {
+    document.getElementById('add-expense-form').style.display = 'block';
+    document.addEventListener('click', handleOutsideClick);
+});
+
+function handleOutsideClick(event) {
+    const form = document.getElementById('add-expense-form');
+    if (!form.contains(event.target) && event.target !== document.getElementById('add-expense-btn')) {
+        form.style.display = 'none';
+        document.removeEventListener('click', handleOutsideClick);
+    }
+}
+document.getElementById('submit-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const incomeInput = document.getElementById('income');
+    const expenseInput = document.getElementById('expense');
+    const balanceInput = document.getElementById('balance');
+    const descriptionInput = document.getElementById('description');
+
+    const expenseData = {
+      income: incomeInput.value,
+      expense: expenseInput.value,
+      balance: balanceInput.value,
+      description: descriptionInput.value,
+    };
+
+    try {
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
+
+      const response = await fetch('/api/yearly', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(expenseData),
+      });
+
+      if (response.ok) {
+        const monthlyExpense = await response.json();
+        console.log(monthlyExpense);
+        document.getElementById('add-expense-form').style.display = 'none';
+      } else {
+        console.error('Error creating monthly expense:', response.status);
+      }
+    } catch (error) {
+      console.error('Error creating monthly expense:', error);
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', async () => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+    };
+    const monthlySummaryResponse = await fetch('/api/yearly-summary', { method: 'GET', headers });
+    const monthlySummary = await monthlySummaryResponse.json();
+
+    // Update the HTML elements with the retrieved data
+    document.getElementById('total-income').textContent = `${monthlySummary.income}`;
+    document.getElementById('total-expense').textContent = `${monthlySummary.expense}`;
+    document.getElementById('balance-left').textContent = `${monthlySummary.balance}`;
+    document.getElementById('description-detail').textContent = monthlySummary.description;
+  }
+});
+
     </script>
 </body>
 
