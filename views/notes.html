@@ -28,7 +28,7 @@
     </div>
     <nav>
       <ul>
-        <li><a href="/notes" id="notes-nav-item"><i class="fas fa-pencil"
+        <li><a href="/note" id="notes-nav-item"><i class="fas fa-pencil"
               style="font-size: 24px;"></i><strong>Notes</strong></a></li>
         <li id="daily-expense"><a href="/daily"><i class="fas fa-money-bill-wave"
               style="font-size: 24px;"></i><strong>Daily</strong></a></li>
@@ -54,6 +54,7 @@
       <form id="add-note-form" style="display: none;">
         <input type="text" id="note-input" placeholder="Add a new note">
         <textarea id="note-textarea" placeholder="Enter note details"></textarea>
+        <input type="date" id="note-date" required>
         <button id="submit-note-btn" type="submit">Add Note</button>
       </form>
     </section>
@@ -63,7 +64,7 @@
 
     notesNavItem.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = '/notes';
+      window.location.href = '/note';
     });
     const dailyNavItem = document.getElementById('daily-expense');
 
@@ -137,6 +138,70 @@
         moreOptionsList.classList.remove('show');
       }
     });
+
+  const submitNoteBtn = document.getElementById('submit-note-btn');
+  const notesList = document.getElementById('notes-list');
+
+  submitNoteBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const noteTitle = document.getElementById('note-input').value;
+    const noteText = document.getElementById('note-textarea').value;
+    const noteDate = document.getElementById('note-date').value; 
+    const token = localStorage.getItem('token');
+
+    try {
+      console.log('Authorization Header:', 'Bearer ' + token);
+      const response = await fetch('/api/notes', {
+        method: 'POST',
+        headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`, 
+  },
+  body: JSON.stringify({ title: noteTitle, text: noteText, date: noteDate }),
+      });
+
+      if (response.ok) {
+        const note = await response.json();
+        addNoteToList(note);
+        addNoteForm.reset();
+        addNoteForm.style.display = 'none';
+      } else {
+        console.error('Error creating note:', response.status);
+      }
+    } catch (error) {
+      console.error('Error creating note:', error);
+    }
+  });
+
+  async function getNotes() {
+  try {
+    const response = await fetch('/api/notes', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const notes = await response.json();
+    notes.forEach((note) => {
+      addNoteToList(note);
+    });
+  } catch (error) {
+    console.error('Error getting notes:', error);
+  }
+}
+
+function addNoteToList(note) {
+  const noteListItem = document.createElement('li');
+  noteListItem.innerHTML = `<span>${note.date}</span> - <span>${note.title}</span> - <span>${note.text}</span>`;
+  notesList.appendChild(noteListItem);
+}
+  document.addEventListener('DOMContentLoaded', getNotes);
 
   </script>
 </body>
