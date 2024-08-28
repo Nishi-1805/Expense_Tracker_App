@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const fs = require('fs');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const routes = require('./routes/app');
@@ -14,6 +15,9 @@ const Monthly = require('./models/monthly');
 const Yearly = require('./models/year');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
+const compression = require('compression');
+const morgan = require('morgan');
 
 app.use(cookieParser());
 app.use(express.json());
@@ -131,6 +135,12 @@ Yearly.belongsTo(PrimaryProfile, {
   onDelete: 'CASCADE'
 });
 
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'} );
+
+app.use(helmet());
+app.use(compression());
+app.use(morgan('combined', {stream: accessLogStream}));
+
 sequelize.sync() 
     .then(() => {
         console.log('Database connected and tables synced');
@@ -139,6 +149,6 @@ sequelize.sync()
         console.error('Unable to connect to the database:', err);
     });
 
-app.listen(3000, () => {
+app.listen(process.env.PORT || 3000, () => {
   console.log('Server listening on port 3000');
 });
