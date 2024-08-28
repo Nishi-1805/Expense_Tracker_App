@@ -175,8 +175,21 @@ exports.getNotes = async (req, res) => {
   try {
     const userId = req.user.id;
     const primaryProfile = await PrimaryProfile.findOne({ where: { id: userId } });
-  const notes = await Note.findAll({ where: { profileId: primaryProfile.id } });
-    res.json(notes);
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5; // number of notes per page
+    const offset = (page - 1) * limit;
+
+    const notes = await Note.findAll({
+      where: { profileId: primaryProfile.id },
+      limit,
+      offset,
+      attributes: ['date', 'title', 'text'] 
+    });
+
+    const count = await Note.count({ where: { profileId: primaryProfile.id } });
+    const totalPages = Math.ceil(count / limit);
+
+    res.json({ notes, totalPages });
   } catch (error) {
     console.error('Error getting notes:', error);
     res.status(500).json({ message: 'Internal Server Error' });
