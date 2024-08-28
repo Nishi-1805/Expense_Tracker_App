@@ -1,9 +1,14 @@
 const axios = require('axios');
+const path = require('path');
+const buffer = require('buffer');
 const sequelize = require('../util/database');
 const PrimaryProfile = require('../models/primaryprofile')
 const Transactions = require('../models/daily-expense');
 const Orders = require('../models/orders')
 const ForgotPasswordRequest = require('../models/forgot_pw_request');
+const Note = require('../models/Note');
+const Monthlyexpense = require('../models/monthly');
+const Yearlyexpense = require('../models/year');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 const moment = require('moment');
@@ -13,6 +18,7 @@ const { authenticate, generateAccessToken } = require('../middleware/auth');
 const Razorpay = require('razorpay');
 const dotenv = require('dotenv');
 const { sendForgotPasswordEmail } = require('./mail');
+const S3services = require('../services/S3services');
 
 dotenv.config({ path: './util/.env' });
 console.log(process.env.RAZORPAY_KEY_ID, process.env.RAZORPAY_SECRET_KEY);
@@ -72,6 +78,7 @@ exports.getDailyExpensePage = (req, res) => {
 }
 
 exports.getMonthlyExpensePage = (req, res) => {
+  res.cookie('isPremium', req.session.isPremium, { httpOnly: false });
   res.sendFile(path.join(__dirname, '../views/monthly.html'))
 }
 
@@ -86,9 +93,8 @@ exports.createUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-   // const userfile = await Userfile.create({ googleDriveBackupId: null }); // assume no Google Drive backup ID for now
     const primaryProfile = await PrimaryProfile.create({
-     // userId: userfile.id,
+    
       password: hashedPassword,
       name,
       email,
@@ -124,6 +130,55 @@ exports.login = async (req, res) => {
     res.json({ token });
   } catch (error) {
     console.error('Error logging in:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+exports.createNote = async (req, res) => {
+  try {
+    const token = req.header('Authorization').replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
+    const userId = decoded.userId;
+    console.log(`Received Token: ${token}`);
+
+    const primaryProfile = await PrimaryProfile.findOne({ where: { id: userId } });
+    if (!primaryProfile) {
+      return res.status(401).send({ error: 'User not found' });
+    }
+
+    const noteData = req.body;
+    console.log(`Received note data: ${JSON.stringify(noteData)}`);
+
+    const formattedDate = moment(noteData.date, 'YYYY-MM-DD', true).isValid() ? moment(noteData.date).format('YYYY-MM-DD') : null;
+
+    if (!formattedDate) {
+      console.log(`Invalid date format: ${noteData.date}`);
+      return res.status(400).send({ error: 'Invalid date format. Please use YYYY-MM-DD.' });
+    }
+
+    const note = new Note({
+      title: noteData.title,
+      text: noteData.text,
+      date: formattedDate,
+      profileId: primaryProfile.id, 
+    });
+
+    await note.save();
+    res.status(201).send(note);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({ error: 'Error creating note' });
+  }
+}
+
+exports.getNotes = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const primaryProfile = await PrimaryProfile.findOne({ where: { id: userId } });
+  const notes = await Note.findAll({ where: { profileId: primaryProfile.id } });
+    res.json(notes);
+  } catch (error) {
+    console.error('Error getting notes:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
@@ -292,11 +347,14 @@ exports.checkPremiumStatus = async (req, res) => {
     const orders = await Orders.findAll({
       where: {
         profileId: user.id,
-        status: 'paid',
       },
     });
-    const isPremium = orders.length > 0; // Check if the user has any paid orders
-    res.json({ isPremium });
+    if (orders.length === 0) {
+      res.json({ isPremium: false }); // User has no orders, so they're not premium
+    } else {
+      const isPremium = orders.some(order => order.status === 'paid');
+      res.json({ isPremium });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to check premium status' });
@@ -385,3 +443,165 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+exports.createMonthlyExpense = async (req, res) => {
+  try {
+    const { user } = req;
+    const expenseData = req.body;
+
+    const monthlyExpense = await Monthlyexpense.create({
+      income: expenseData.income,
+      expense: expenseData.expense,
+      balance: expenseData.balance,
+      description: expenseData.description,
+      profileId: user.id,
+    });
+
+    res.status(201).json({
+      message: 'Monthly expense added successfully',
+    });
+  } catch (error) {
+    console.error('Error creating monthly expense:', error);
+    res.status(500).json({ message: 'Error creating monthly expense' });
+  }
+};
+
+exports.getMonthlyExpenses = async (req, res) => {
+  try {
+    const profileId = req.user.id;
+    const transactions = await Monthlyexpense.findAll({
+      where: {
+        profileId: {
+          [Op.eq]: profileId
+        }
+      }
+    });
+
+    if (!transactions) {
+      return res.status(404).json({ message: 'No monthly expense data found' });
+    }
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+    let totalBalance = 0;
+
+    transactions.forEach((transaction) => {
+      totalIncome += parseFloat(transaction.income);
+      totalExpense += parseFloat(transaction.expense);
+      totalBalance += parseFloat(transaction.balance);
+    });
+
+    totalIncome = totalIncome.toFixed(2);
+    totalExpense = totalExpense.toFixed(2);
+    totalBalance = totalBalance.toFixed(2);
+
+    const latestTransaction = transactions[transactions.length - 1];
+    const monthlyExpenses = {
+      income: totalIncome,
+      expense: totalExpense,
+      balance: totalBalance,
+      description: latestTransaction.description
+    };
+
+    res.json(monthlyExpenses);
+  } catch (error) {
+    console.error('Error fetching monthly expenses:', error);
+    res.status(500).json({ message: 'Error fetching monthly expenses' });
+  }
+};
+
+exports.createYearlyExpense = async (req, res) => {
+  try {
+    const { user } = req;
+    const expenseData = req.body;
+
+    const yearlyExpense = await Yearlyexpense.create({
+      income: expenseData.income,
+      expense: expenseData.expense,
+      balance: expenseData.balance,
+      description: expenseData.description,
+      profileId: user.id,
+    });
+
+    res.status(201).json({
+      message: 'Yearly expense added successfully',
+    });
+  } catch (error) {
+    console.error('Error creating yearly expense:', error);
+    res.status(500).json({ message: 'Error creating yearly expense' });
+  }
+};
+
+exports.getYearlyExpenses = async (req, res) => {
+  try {
+    const profileId = req.user.id;
+    const transactions = await Yearlyexpense.findAll({
+      where: {
+        profileId: {
+          [Op.eq]: profileId
+        }
+      }
+    });
+
+    if (!transactions) {
+      return res.status(404).json({ message: 'No yearly expense data found' });
+    }
+
+    let totalIncome = 0;
+    let totalExpense = 0;
+    let totalBalance = 0;
+
+    transactions.forEach((transaction) => {
+      totalIncome += parseFloat(transaction.income);
+      totalExpense += parseFloat(transaction.expense);
+      totalBalance += parseFloat(transaction.balance);
+    });
+
+    totalIncome = totalIncome.toFixed(2);
+    totalExpense = totalExpense.toFixed(2);
+    totalBalance = totalBalance.toFixed(2);
+
+    const latestTransaction = transactions[transactions.length - 1];
+    const yearlyExpenses = {
+      income: totalIncome,
+      expense: totalExpense,
+      balance: totalBalance,
+      description: latestTransaction.description
+    };
+
+    res.json(yearlyExpenses);
+  } catch (error) {
+    console.error('Error fetching yearly expenses:', error);
+    res.status(500).json({ message: 'Error fetching yearly expenses' });
+  }
+};
+
+exports.downloadallexpense = async (req, res) => {
+  try {
+    const profileId = req.user.id;
+    const dailyExpenses = await Transactions.findAll({
+      where: {
+        profileId: profileId
+      }
+    });
+    const monthlyExpenses = await Monthlyexpense.findAll({
+      where: {
+        profileId: profileId
+      }
+    });
+    const yearlyExpenses = await Yearlyexpense.findAll({
+      where: {
+        profileId: profileId
+      }
+    });
+    const allExpenses = [...dailyExpenses, ...monthlyExpenses, ...yearlyExpenses];
+  
+    const filename = `AllExpenses_${profileId}_${new Date().toISOString().replace(/:/g, '-')}.txt`;
+    const fileURL = await S3services.uploadToS3(allExpenses, filename);
+
+    res.json({ fileURL: fileURL });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ err: err });
+  }
+}
