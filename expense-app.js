@@ -15,9 +15,7 @@ const Monthly = require('./models/monthly');
 const Yearly = require('./models/year');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-const helmet = require('helmet');
-const compression = require('compression');
-const morgan = require('morgan');
+const dotenv = require('dotenv');
 
 app.use(cookieParser());
 app.use(express.json());
@@ -26,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors()); 
+dotenv.config();
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
@@ -134,12 +133,6 @@ Yearly.belongsTo(PrimaryProfile, {
   foreignKey: 'profileId',
   onDelete: 'CASCADE'
 });
-
-const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), {flags: 'a'} );
-
-app.use(helmet());
-app.use(compression());
-app.use(morgan('combined', {stream: accessLogStream}));
 
 sequelize.sync() 
     .then(() => {
