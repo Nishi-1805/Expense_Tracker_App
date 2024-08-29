@@ -37,7 +37,7 @@
         <section id="sign-in">
             <p>Safeguard your data by signing in with your Google Drive backup.</p>
             <p>This secures your information, ensuring recovery in case of device loss or app issues as the app does not have access to any of the users data.</p>
-         <button type="submit">Sign In</button>
+         <button type="submit" id="sign-in-btn">Sign In</button>
         </section>
       
         <!-- Section 3: Note and Skip Button -->
@@ -74,7 +74,7 @@
       if (response.ok) {
         primaryProfileForm.reset();
         console.log('User added successfully!');
-        window.location.href = '/notes'; // redirect to notes page
+        window.location.href = '/login'; 
       } else {
         const errorMessage = await response.text();
       document.getElementById('error-message').innerHTML = errorMessage;
@@ -83,6 +83,12 @@
       console.error('Error adding user:', error);
     }
   });
+
+  const signInBtn = document.getElementById('sign-in-btn');
+    signInBtn.addEventListener('click', () => {
+        window.location.href = '/login'; // 
+    });
+    
         const skipBtn = document.getElementById('skip-btn');
         skipBtn.addEventListener('click', () => {
     window.location.href = '/notes';
