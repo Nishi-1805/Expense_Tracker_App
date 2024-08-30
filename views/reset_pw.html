@@ -17,29 +17,15 @@
     <button type="submit">Reset Password</button>
   </form>
   <script>
- document.addEventListener('DOMContentLoaded', async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const forgotPasswordRequestId = urlParams.get('forgotPasswordRequestId');
-  try {
-        const response = await fetch(`/api/reset-password/${forgotPasswordRequestId}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (response.ok) {
-          console.log('Forgot Password Request ID is valid');
-        } else {
-          alert('Invalid or expired password reset link');
-        }
-      } catch (error) {
-        console.error('Error verifying password reset link:', error);
-        alert('Error verifying password reset link');
-      }
-
     const form = document.getElementById('reset-pw-form');
-
+    let passwordReset = false;
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-  
+      if (passwordReset) {
+      alert('Password has already been reset. Please login with your new password.');
+      return;
+    }
+      const forgotPasswordRequestId = window.location.pathname.split('/')[2];
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
 
@@ -54,22 +40,18 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password, confirmPassword }),
         });
-        console.log(forgotPasswordRequestId);
 
-if (response.ok) {
-  console.log('Password reset successfully');
-  alert('Password reset successfully');
-
-} else {
-  console.error('Error resetting password:', response.status);
-  alert('Error resetting password');
-}
-} catch (error) {
-console.error('Error resetting password:', error);
-alert('Error resetting password');
-}
-});
-});
+        if (response.ok) {
+          alert('Password reset successfully');
+          passwordReset = true; 
+        } else {
+          alert('Error resetting password');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error resetting password');
+      }
+    });
   </script>
 
 </body>
