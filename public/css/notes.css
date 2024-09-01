@@ -132,19 +132,6 @@ body {
     margin-top: 20px;
   }
   
-  #add-note-btn {
-    background-color: #4CAF50;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  #add-note-btn:hover {
-    background-color: #3e8e41;
-  }
-  
   #add-note-form {
     display: none;
     margin-top: 20px; 
@@ -186,3 +173,86 @@ body {
   #submit-note-btn:hover {
     background-color: #3e8e41;
   }
+
+  #note-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  #note-list > div {
+    background-color: #f9f9f9;
+    font-size: larger;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin: 20px 0;
+    width: 70%; 
+  }
+  
+  #note-list > div:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  #note-list > div:last-child {
+    margin-bottom: 40px; 
+  }
+
+  .note-item {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin: 20px 0;
+    width: 70%; 
+  }
+  
+  .note-item:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .note-item + .note-item {
+    margin-top: 20px; 
+  }
+
+#add-note-btn {
+  background-color: #37d80b;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+#add-note-btn:hover {
+  background-color: #107ed1;
+}
+
+#pagination-links {
+  text-align: center;
+  margin: 20px auto;
+}
+
+#pagination-links a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #337ab7;
+  transition: color 0.2s ease;
+}
+
+#pagination-links a:hover {
+  color: #23527c;
+}
+
+#pagination-links a.active {
+  font-weight: bold;
+  color: #23527c;
+}
+
+#previous-link, #next-link {
+  margin: 0 20px;
+}
+
+#previous-link:hover, #next-link:hover {
+  text-decoration: underline;
+}
