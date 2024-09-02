@@ -41,11 +41,11 @@
   <div id="premium-text" style="display: none;"></div>
   <main>
     <section class="daily-expense-container">
-      <div class="date-bar">
-        <button id="prev-date-btn"><i class="fas fa-chevron-left"></i></button>
-        <span id="current-date">August 13, 2024</span>
-        <button id="next-date-btn"><i class="fas fa-chevron-right"></i></button>
-      </div>
+    //  <div class="date-bar">
+    //    <button id="prev-date-btn"><i class="fas fa-chevron-left"></i></button>
+    //    <span id="current-date">August 13, 2024</span>
+    //    <button id="next-date-btn"><i class="fas fa-chevron-right"></i></button>
+    //  </div>
       <div class="container">
         <section class="income-section">
           <div class="income-section-header">
@@ -118,9 +118,9 @@
     });
 
     // JavaScript code for daily expense page
-    const currentDateSpan = document.getElementById('current-date');
-    const prevDateBtn = document.getElementById('prev-date-btn');
-    const nextDateBtn = document.getElementById('next-date-btn');
+//    const currentDateSpan = document.getElementById('current-date');
+//    const prevDateBtn = document.getElementById('prev-date-btn');
+//    const nextDateBtn = document.getElementById('next-date-btn');
     const addTransactionBtn = document.getElementById('add-transaction-btn');
     const totalIncomeSpan = document.getElementById('total-income');
     const totalExpenseSpan = document.getElementById('total-expense');
@@ -137,25 +137,25 @@
       totalIncomeSpan.textContent = 'Total Income (Credit): 0.00';
       totalExpenseSpan.textContent = 'Total Expense (Debit): 0.00';
     }
-    let currentDate = new Date('2024-08-15'); // initialize with a fixed date
+//    let currentDate = new Date('2024-08-15'); // initialize with a fixed date
 
-    prevDateBtn.addEventListener('click', () => {
-      currentDate.setDate(currentDate.getDate() - 1);
-      updateDateDisplay();
-    });
+//    prevDateBtn.addEventListener('click', () => {
+  //    currentDate.setDate(currentDate.getDate() - 1);
+  //    updateDateDisplay();
+ //   });
 
-    nextDateBtn.addEventListener('click', () => {
-      currentDate.setDate(currentDate.getDate() + 1);
-      updateDateDisplay();
-    });
+//    nextDateBtn.addEventListener('click', () => {
+//      currentDate.setDate(currentDate.getDate() + 1);
+//      updateDateDisplay();
+//    });
 
-    function updateDateDisplay() {
-      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-      const day = currentDate.getDate();
-      const month = monthNames[currentDate.getMonth()];
-      const year = currentDate.getFullYear();
-      currentDateSpan.textContent = `${month} ${day}, ${year}`;
-    }
+ //   function updateDateDisplay() {
+ //     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+//      const day = currentDate.getDate();
+//      const month = monthNames[currentDate.getMonth()];
+//      const year = currentDate.getFullYear();
+//      currentDateSpan.textContent = `${month} ${day}, ${year}`;
+//    }
 
     addTransactionBtn.addEventListener('click', () => {
       addTransactionForm.style.display = 'block';
