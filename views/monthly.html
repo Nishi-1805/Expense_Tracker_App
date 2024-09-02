@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Day-to-Day Expenses - Notes</title>
+    <title>Day-to-Day Expenses</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/css/monthly.css">
 </head>
@@ -249,7 +249,6 @@ function download() {
     axios({
       method: 'get',
       url: 'http://13.51.29.66:3000/api/download',
-    //  responseType: 'blob',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
