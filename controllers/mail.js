@@ -28,7 +28,7 @@ const sendForgotPasswordEmail = (email, name, forgotPasswordRequestId) => {
       textContent: `
           Hello ${name},
           Please use the following link to reset your password:
-          http://localhost:3000/reset-password/${forgotPasswordRequestId}
+          http://13.51.29.66:3000/reset-password/${forgotPasswordRequestId}
       `,
     })
     .then((response) => {
