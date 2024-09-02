@@ -38,6 +38,11 @@ app.use(session({
   saveUninitialized: true,
 }));
 
+app.use((req, res, next) => {
+  console.log(`${req.method} request to ${req.url}`);
+  next();
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '/views/app.html'));
 });
@@ -67,8 +72,6 @@ app.get('/yearly', (req, res) => {
 });
 
 app.get('/reset-password/:forgotPasswordRequestId', (req, res) => {
-  const forgotPasswordRequestId = req.params.forgotPasswordRequestId;
-
   res.sendFile(path.join(__dirname, '/views/reset_pw.html'));
 });
 
