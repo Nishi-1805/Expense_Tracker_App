@@ -7,7 +7,7 @@ const session = require('express-session');
 const SECRET_KEY = process.env.TOKEN_SECRET;;
 
 const generateAccessToken = (userId) => {
-  return jwt.sign({ userId }, SECRET_KEY, { expiresIn: '2000h' });
+  return jwt.sign({ userId }, SECRET_KEY, { expiresIn: '7000h' });
 };
 
 const authenticate = async (req, res, next) => {
@@ -35,13 +35,3 @@ const authenticate = async (req, res, next) => {
 };
 
 module.exports = { authenticate, generateAccessToken };
-
-
-//const crypto = require('crypto');
-
-//const generateSecretKey = () => {
-  //return crypto.randomBytes(32).toString('hex');
-//};
-
-//const secretKey = generateSecretKey();
-//console.log(secretKey);
