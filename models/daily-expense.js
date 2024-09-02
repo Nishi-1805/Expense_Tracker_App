@@ -25,17 +25,29 @@ const Transaction = sequelize.define('Transaction', {
 
 Transaction.afterCreate(async (transaction) => {
   try {
+    console.log(`Processing transaction for profile ID: ${transaction.profileId}`);
+
     const primaryProfile = await PrimaryProfile.findByPk(transaction.profileId);
     if (primaryProfile) {
+      console.log(`Found primary profile: ${primaryProfile.id}, current totalExpense: ${primaryProfile.totalExpense}`);
+
       const totalExpense = await Transaction.sum('amount', {
-        where: { profileId: transaction.profileId }
+        where: { profileId: transaction.profileId },
       });
-      primaryProfile.totalExpense = totalExpense; // update totalExpense with the sum
+
+      console.log(`Calculated totalExpense: ${totalExpense}`);
+      
+      primaryProfile.totalExpense = totalExpense || 0;
       await primaryProfile.save();
+
+      console.log(`Updated totalExpense in primary profile: ${primaryProfile.totalExpense}`);
+    } else {
+      console.error(`PrimaryProfile not found for profile ID: ${transaction.profileId}`);
     }
   } catch (error) {
-    console.error('Error updating totalExpense:', error);
+    console.error('Error updating primary profile totalExpense:', error);
   }
 });
+
 
 module.exports = Transaction;
