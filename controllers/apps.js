@@ -176,7 +176,7 @@ exports.getNotes = async (req, res) => {
     const userId = req.user.id;
     const primaryProfile = await PrimaryProfile.findOne({ where: { id: userId } });
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 5;// number of notes per page
     const offset = (page - 1) * limit;
 
     const notes = await Note.findAll({
@@ -330,6 +330,7 @@ exports.handlePaymentResponse = async (req, res) => {
     const paymentId = req.body.razorpay_payment_id;
     const orderId = uuid.v4();
 
+    // Save payment details to database
     const user = req.user;
     user.isPremium = true;
     await user.save();
@@ -341,6 +342,7 @@ exports.handlePaymentResponse = async (req, res) => {
       status: 'paid',
     });
     req.session.isPremium = true;
+    // Set cookie indicating premium membership 
     res.cookie('premiumStatus', 'true', { maxAge: 31536000000 }); 
     res.json({ message: 'Premium membership purchased successfully!' });
   } catch (error) {
@@ -351,7 +353,7 @@ exports.handlePaymentResponse = async (req, res) => {
 
 exports.checkPremiumStatus = async (req, res) => {
   try {
-    const user = req.user; 
+    const user = req.user; // The user should already be set by the `authenticate` middleware
     if (!user) {
       throw new Error('Unauthorized');
     }
@@ -361,7 +363,7 @@ exports.checkPremiumStatus = async (req, res) => {
       },
     });
     if (orders.length === 0) {
-      res.json({ isPremium: false }); 
+      res.json({ isPremium: false }); // User has no orders, so they're not premium
     } else {
       const isPremium = orders.some(order => order.status === 'paid');
       res.json({ isPremium });
@@ -402,8 +404,10 @@ exports.forgotPassword = async (req, res) => {
     const forgotPasswordRequest = await ForgotPasswordRequest.create({
       userId: user.id
     });
+    console.log('Forgot Password Request:', forgotPasswordRequest);
 
     sendForgotPasswordEmail(email, user.name, forgotPasswordRequest.id);
+    console.log('Forgot Password Requestid:', forgotPasswordRequest.id);    
 
     res.status(200).json({ message: 'Password reset link sent to your email' });
   } catch (error) {
@@ -412,22 +416,8 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-exports.getResetPasswordPage = async (req, res) => {
-  try {
-    const forgotPasswordRequestId = req.params.forgotPasswordRequestId;
-    const forgotPasswordRequest = await ForgotPasswordRequest.findByPk(forgotPasswordRequestId);
-
-    if (!forgotPasswordRequest || !forgotPasswordRequest.isActive) {
-      return res.status(404).json({ message: 'Invalid or expired password reset link' });
-    }
-    res.status(200).sendFile(path.join(__dirname, '../views/reset-password.html'));
-  } catch (error) {
-    console.error('Error fetching reset password page:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
-
 exports.resetPassword = async (req, res) => {
+  console.log('Reset password route called');
   try {
     const forgotPasswordRequestId = req.params.forgotPasswordRequestId;
     const forgotPasswordRequest = await ForgotPasswordRequest.findByPk(forgotPasswordRequestId);
@@ -441,7 +431,7 @@ exports.resetPassword = async (req, res) => {
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Passwords do not match' });
     }
-    
+
     const user = await PrimaryProfile.findByPk(forgotPasswordRequest.userId);
     user.password = await bcrypt.hash(password, 10);
     await user.save();
