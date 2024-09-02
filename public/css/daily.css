@@ -1,5 +1,4 @@
 
-
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
@@ -182,8 +181,6 @@ body {
   font-weight: bold; 
 }
 
-
-/* Align transaction details horizontally */
 .transaction-item {
   display: flex;
   justify-content: space-between;
@@ -211,8 +208,6 @@ body {
     text-align: left;
   }
 }
-
-/* Add Transaction Button and Form */
 
 #add-transaction-btn {
   background-color: #4CAF50;
@@ -305,7 +300,6 @@ body {
   margin-top: 2px;
 }
 
-/* Style the leaderboard button */
 #leaderboard-btn {
   background-color: #4CAF50; 
   color: #fff; 
@@ -316,7 +310,7 @@ body {
 }
 
 #leaderboard-btn:hover {
-  background-color: #3e8e41;
+  background-color: #3e8e41; 
 }
 
 #leaderboard-list li {
@@ -326,5 +320,5 @@ body {
 }
 
 #leaderboard-list li:hover {
-  background-color: #f2f2f2; 
+  background-color: #f2f2f2;
 }
