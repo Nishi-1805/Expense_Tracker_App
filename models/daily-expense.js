@@ -4,13 +4,13 @@ const PrimaryProfile = require('./primaryprofile');
 
 const Transaction = sequelize.define('Transaction', {
   date: {
-    type: DataTypes.DATEONLY // add a date column
+    type: DataTypes.DATEONLY 
   },
   type: {
-    type: DataTypes.STRING // income or expense
+    type: DataTypes.STRING 
   },
   text: {
-    type: DataTypes.STRING // income or expense text
+    type: DataTypes.STRING 
   },
   amount: {
     type: DataTypes.DECIMAL(10, 2)
