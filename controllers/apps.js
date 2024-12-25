@@ -123,10 +123,8 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-    // Generate token
     const token = generateAccessToken(primaryProfile.id);
 
-    // Send token back to client
     res.json({ token });
   } catch (error) {
     console.error('Error logging in:', error);
@@ -277,7 +275,7 @@ exports.getDailyExpenses = async (req, res) => {
 exports.deleteTransaction = async (req, res) => {
   try {
     const transactionId = req.params.transactionId;
-    const userId = req.user.id; // Ensure user is properly authenticated
+    const userId = req.user.id; 
 
     const transaction = await Transactions.findOne({
       where: { id: transactionId, profileId: userId }
@@ -312,7 +310,7 @@ exports.deleteTransaction = async (req, res) => {
 exports.buyPremiumMembership = async (req, res) => {
   try {
     const options = {
-      amount: 100, // Amount in paise
+      amount: 100, 
       currency: 'INR',
       receipt: 'rcptid_11',
     };
@@ -330,7 +328,6 @@ exports.handlePaymentResponse = async (req, res) => {
     const paymentId = req.body.razorpay_payment_id;
     const orderId = uuid.v4();
 
-    // Save payment details to database
     const user = req.user;
     user.isPremium = true;
     await user.save();
@@ -342,7 +339,6 @@ exports.handlePaymentResponse = async (req, res) => {
       status: 'paid',
     });
     req.session.isPremium = true;
-    // Set cookie indicating premium membership 
     res.cookie('premiumStatus', 'true', { maxAge: 31536000000 }); 
     res.json({ message: 'Premium membership purchased successfully!' });
   } catch (error) {
@@ -353,7 +349,7 @@ exports.handlePaymentResponse = async (req, res) => {
 
 exports.checkPremiumStatus = async (req, res) => {
   try {
-    const user = req.user; // The user should already be set by the `authenticate` middleware
+    const user = req.user; 
     if (!user) {
       throw new Error('Unauthorized');
     }
@@ -363,7 +359,7 @@ exports.checkPremiumStatus = async (req, res) => {
       },
     });
     if (orders.length === 0) {
-      res.json({ isPremium: false }); // User has no orders, so they're not premium
+      res.json({ isPremium: false });
     } else {
       const isPremium = orders.some(order => order.status === 'paid');
       res.json({ isPremium });
