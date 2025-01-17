@@ -310,7 +310,7 @@ exports.deleteTransaction = async (req, res) => {
 exports.buyPremiumMembership = async (req, res) => {
   try {
     const options = {
-      amount: 100, // Amount in paise
+      amount: 100, 
       currency: 'INR',
       receipt: 'rcptid_11',
     };
@@ -349,7 +349,7 @@ exports.handlePaymentResponse = async (req, res) => {
 
 exports.checkPremiumStatus = async (req, res) => {
   try {
-    const user = req.user; // The user should already be set by the `authenticate` middleware
+    const user = req.user; 
     if (!user) {
       throw new Error('Unauthorized');
     }
@@ -359,7 +359,7 @@ exports.checkPremiumStatus = async (req, res) => {
       },
     });
     if (orders.length === 0) {
-      res.json({ isPremium: false }); // User has no orders, so they're not premium
+      res.json({ isPremium: false });
     } else {
       const isPremium = orders.some(order => order.status === 'paid');
       res.json({ isPremium });

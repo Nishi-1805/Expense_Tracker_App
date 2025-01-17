@@ -114,8 +114,7 @@
   #new-user-btn:hover {
     background-color: #23527c;
   }
-  
-  /* Add margin between currency and user auth sections */
+ 
   .currency-selection + .user-auth {
     margin-top: 40px;
   }

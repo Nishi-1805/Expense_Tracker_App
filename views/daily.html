@@ -110,7 +110,6 @@
       moreOptionsList.classList.toggle('show');
     });
 
-    // Add event listener to document to hide menu when clicking outside
     document.addEventListener('click', (e) => {
       if (!moreOptionsList.contains(e.target) && !moreOptionsIcon.contains(e.target)) {
         moreOptionsList.classList.remove('show');
@@ -125,15 +124,12 @@
     const totalIncomeSpan = document.getElementById('total-income');
     const totalExpenseSpan = document.getElementById('total-expense');
 
-    // Retrieve the stored currency from local storage
     const selectedCurrency = localStorage.getItem('selectedCurrency');
 
     if (selectedCurrency) {
-      // Display the selected currency on the daily expense page
       totalIncomeSpan.textContent = `${selectedCurrency} 0.00`;
       totalExpenseSpan.textContent = `${selectedCurrency} 0.00`;
     } else {
-      // Handle the case where no currency is selected
       totalIncomeSpan.textContent = 'Total Income (Credit): 0.00';
       totalExpenseSpan.textContent = 'Total Expense (Debit): 0.00';
     }
@@ -249,7 +245,6 @@
 
             if (response.ok) {
               console.log('Transaction deleted successfully!');
-              // Fetch and update the UI after successful deletion
               const dailyExpensesResponse = await fetch('/api/transactions', {
                 headers: {
                   'Authorization': `Bearer ${token}`,
@@ -270,7 +265,6 @@
     const addTransactionForm = document.getElementById('add-transaction-form');
     const submitTransactionBtn = document.getElementById('submit-transaction-btn');
 
-    // Add event listener to submit transaction button
     submitTransactionBtn.addEventListener('click', async (e) => {
       e.preventDefault();
       const transactionDate = document.getElementById('transaction-date').value;
@@ -387,12 +381,11 @@ function setPremiumStatus(isPremium) {
     leaderboardButton.style.display = 'none';
     }
 }
-// Dispatch event when premium status changes
 document.dispatchEvent(new CustomEvent('premiumStatusChanged', { detail: { isPremium: true } }));
 
 document.getElementById('buy-premium-btn').addEventListener('click', async () => {
   try {
-    const token = localStorage.getItem('token'); // or wherever you store the token
+    const token = localStorage.getItem('token'); 
     const headers = {
       'Content-Type': 'application/json',
     };
@@ -407,14 +400,13 @@ document.getElementById('buy-premium-btn').addEventListener('click', async () =>
     const orderId = await response.json();
     const options = {
       key: 'rzp_test_1l8ZR5jaNH5LNm', 
-      amount: 10000, // Amount in paise
+      amount: 10000, 
       currency: 'INR',
       name: 'Premium Membership',
       description: 'Buy premium membership',
       image: '/your-logo-url',
       order_id: orderId,
       handler: async (response) => {
-        // Send payment response to server
         await fetch('/api/buy-premium', {
           method: 'POST',
           headers: { ...headers }, 
@@ -422,7 +414,7 @@ document.getElementById('buy-premium-btn').addEventListener('click', async () =>
         })
         .then((paymentResponse) => {
           if (paymentResponse.ok) {
-            document.cookie = 'premiumStatus=true; max-age=31536000'; // premium status cookie for 1 year
+            document.cookie = 'premiumStatus=true; max-age=31536000'; 
             setPremiumStatus(true);
           } else {
             console.error('Failed to process payment.');
@@ -476,7 +468,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 leaderboardButton.addEventListener('click', async () => {
   try {
-    const token = localStorage.getItem('token'); // Get the token from local storage
+    const token = localStorage.getItem('token'); 
     const response = await fetch('/api/leaderboard', {
       method: 'GET',
       headers: {
@@ -485,9 +477,8 @@ leaderboardButton.addEventListener('click', async () => {
     });
     const data = await response.json();
     console.log(data);
-    // Update the leaderboard list
     const leaderboardList = document.getElementById('leaderboard-list');
-    leaderboardList.innerHTML = ''; // Clear the list
+    leaderboardList.innerHTML = ''; 
 
     data.forEach((profile) => {
       const listItem = document.createElement('li');
