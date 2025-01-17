@@ -123,10 +123,8 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid password' });
     }
 
-    // Generate token
     const token = generateAccessToken(primaryProfile.id);
 
-    // Send token back to client
     res.json({ token });
   } catch (error) {
     console.error('Error logging in:', error);
@@ -176,7 +174,7 @@ exports.getNotes = async (req, res) => {
     const userId = req.user.id;
     const primaryProfile = await PrimaryProfile.findOne({ where: { id: userId } });
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;// number of notes per page
+    const limit = parseInt(req.query.limit) || 5;
     const offset = (page - 1) * limit;
 
     const notes = await Note.findAll({
@@ -277,7 +275,7 @@ exports.getDailyExpenses = async (req, res) => {
 exports.deleteTransaction = async (req, res) => {
   try {
     const transactionId = req.params.transactionId;
-    const userId = req.user.id; // Ensure user is properly authenticated
+    const userId = req.user.id; 
 
     const transaction = await Transactions.findOne({
       where: { id: transactionId, profileId: userId }
@@ -330,7 +328,6 @@ exports.handlePaymentResponse = async (req, res) => {
     const paymentId = req.body.razorpay_payment_id;
     const orderId = uuid.v4();
 
-    // Save payment details to database
     const user = req.user;
     user.isPremium = true;
     await user.save();
@@ -342,7 +339,6 @@ exports.handlePaymentResponse = async (req, res) => {
       status: 'paid',
     });
     req.session.isPremium = true;
-    // Set cookie indicating premium membership 
     res.cookie('premiumStatus', 'true', { maxAge: 31536000000 }); 
     res.json({ message: 'Premium membership purchased successfully!' });
   } catch (error) {

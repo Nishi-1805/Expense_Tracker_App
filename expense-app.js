@@ -16,6 +16,8 @@ const Yearly = require('./models/year');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const dotenv = require('dotenv');
+const compression = require('compression');
+const morgan =  require('morgan');
 
 app.use(cookieParser());
 app.use(express.json());
@@ -25,6 +27,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(cors()); 
 dotenv.config();
+
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
+
+app.use(compression());
+app.use(morgan('combined', { stream: accessLogStream }));
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
